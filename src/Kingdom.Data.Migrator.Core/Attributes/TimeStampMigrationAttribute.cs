@@ -2,6 +2,9 @@
 
 namespace Kingdom.Data.Attributes
 {
+    /// <summary>
+    /// Time stamp migration provides <see cref="DateTime"/> based migration details.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class TimeStampMigrationAttribute : AbstractMigrationAttribute
     {

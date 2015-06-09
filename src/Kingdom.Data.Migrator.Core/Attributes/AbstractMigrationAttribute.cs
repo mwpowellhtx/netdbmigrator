@@ -2,6 +2,9 @@
 
 namespace Kingdom.Data.Attributes
 {
+    /// <summary>
+    /// Provides base level migration details used during the course of a typical migration.
+    /// </summary>
     public abstract class AbstractMigrationAttribute : Attribute
     {
         /// <summary>

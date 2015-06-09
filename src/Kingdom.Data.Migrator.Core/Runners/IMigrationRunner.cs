@@ -2,8 +2,9 @@
 
 namespace Kingdom.Data.Runners
 {
-    public interface IMigrationRunner<in TValue>
+    public interface IMigrationRunner<out TRunner, in TValue> : IDisposable
         where TValue : IComparable<TValue>
+        where TRunner : IMigrationRunner<TRunner, TValue>
     {
         /// <summary>
         /// Migrates Up all versions.
@@ -26,5 +27,11 @@ namespace Kingdom.Data.Runners
         /// </summary>
         /// <param name="minValue"></param>
         void Down(TValue minValue);
+
+        /// <summary>
+        /// Runs the runner given a delegated action.
+        /// </summary>
+        /// <param name="runner"></param>
+        void Run(Action<TRunner> runner);
     }
 }

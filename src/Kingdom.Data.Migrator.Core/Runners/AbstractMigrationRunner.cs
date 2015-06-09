@@ -6,13 +6,15 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Kingdom.Data.Attributes;
 using Kingdom.Data.Migrations;
 
 namespace Kingdom.Data.Runners
 {
-    public abstract class AbstractMigrationRunner<TValue>
-        : IMigrationRunner<TValue>
+    public abstract class AbstractMigrationRunner<TRunner, TValue>
+        : IMigrationRunner<TRunner, TValue>
         where TValue : IComparable<TValue>
+        where TRunner : AbstractMigrationRunner<TRunner, TValue>
     {
         /// <summary>
         /// Gets the Context.
@@ -43,8 +45,16 @@ namespace Kingdom.Data.Runners
         protected AbstractMigrationRunner(DbConnection connection,
             params Assembly[] assemblies)
         {
-            Context = new MigrationContext(connection, true);
+            Context = new MigrationDbContext(connection, true);
             Assemblies = assemblies;
+        }
+
+        /// <summary>
+        /// Finalizer
+        /// </summary>
+        ~AbstractMigrationRunner()
+        {
+            Dispose(false);
         }
 
         /// <summary>
@@ -103,6 +113,24 @@ namespace Kingdom.Data.Runners
             return set.ToArray();
         }
 
+        /// <summary>
+        /// Returns the max applied Version.
+        /// </summary>
+        /// <returns></returns>
+        protected long GetMaxAppliedVersion()
+        {
+            //Get the last known applied migration.
+            var applied = GetAppliedMigrations().ToArray();
+
+            return applied.Any()
+                ? applied.Max(a => a.VersionId)
+                : new Version(0, 0).ToLongId();
+        }
+
+        /// <summary>
+        /// Up handler accepting a migration.
+        /// </summary>
+        /// <param name="migration"></param>
         private void UpHandler(AbstractMigration migration)
         {
             migration.Up();
@@ -112,6 +140,10 @@ namespace Kingdom.Data.Runners
             Context.SaveChanges();
         }
 
+        /// <summary>
+        /// Down handler accepting a migration.
+        /// </summary>
+        /// <param name="migration"></param>
         private void DownHandler(AbstractMigration migration)
         {
             migration.Down();
@@ -132,8 +164,11 @@ namespace Kingdom.Data.Runners
                 UpHandler,
                 () =>
                 {
-                    //Get the last known applied migration.
-                    var lastId = GetAppliedMigrations().ToArray().Max(x => x.VersionId);
+                    /* TODO: I don't think it's a problem to solve if there are new/old interleaved
+                     * migrations: there's only so much this can do to facilitate before that's part
+                     * of the self-discipline aspect */
+
+                    var lastId = GetMaxAppliedVersion();
 
                     //Obtain the migrations that are eligible since the last migration.
                     var migrations = Migrations.Where(m => m.Info.Attrib.Id > lastId)
@@ -213,6 +248,20 @@ namespace Kingdom.Data.Runners
                 });
         }
 
+        /// <summary>
+        /// Runs the runner given a delegated action.
+        /// </summary>
+        /// <param name="runner"></param>
+        public virtual void Run(Action<TRunner> runner)
+        {
+            runner((TRunner) this);
+        }
+
+        /// <summary>
+        /// Performs all migrations.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="get"></param>
         private void Migrate(MigrationActionDelegate action,
             Func<IEnumerable<AbstractMigration>> get)
         {
@@ -220,10 +269,16 @@ namespace Kingdom.Data.Runners
             Context.Database.CreateIfNotExists();
 
             var migrations = get();
+
             foreach (var m in migrations)
                 Migrate(m, action);
         }
 
+        /// <summary>
+        /// Performs each individual migration.
+        /// </summary>
+        /// <param name="migration"></param>
+        /// <param name="action"></param>
         private void Migrate(AbstractMigration migration,
             MigrationActionDelegate action)
         {
@@ -234,12 +289,42 @@ namespace Kingdom.Data.Runners
                     action(migration);
                     transaction.Commit();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     transaction.Rollback();
                     throw;
                 }
             }
         }
+
+        #region Disposable Members
+
+        /// <summary>
+        /// Disposed backing field.
+        /// </summary>
+        private bool _disposed;
+
+        /// <summary>
+        /// Disposes the object.
+        /// </summary>
+        /// <param name="disposing"></param>
+        private void Dispose(bool disposing)
+        {
+            if (!disposing || _disposed) return;
+            Assemblies = null;
+            Context.Dispose();
+            Context = null;
+        }
+
+        /// <summary>
+        /// Disposes the object.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            _disposed = true;
+        }
+
+        #endregion
     }
 }

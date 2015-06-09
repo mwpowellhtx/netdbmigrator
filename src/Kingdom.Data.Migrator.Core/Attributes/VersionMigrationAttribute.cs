@@ -3,6 +3,9 @@ using System.Linq;
 
 namespace Kingdom.Data.Attributes
 {
+    /// <summary>
+    /// Version migration attribute provides <see cref="Version"/> based migration details.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class VersionMigrationAttribute : AbstractMigrationAttribute
     {
@@ -72,6 +75,7 @@ namespace Kingdom.Data.Attributes
 
     internal static class VersionExtensionMethods
     {
+        //TODO: put a couple of unit tests in just to verify this functionality.
         /// <summary>
         /// Returns a long Id based on the <see cref="version"/>.
         /// </summary>
@@ -79,10 +83,25 @@ namespace Kingdom.Data.Attributes
         /// <returns></returns>
         internal static long ToLongId(this Version version)
         {
+
             return ReferenceEquals(null, version)
                 ? 0
                 : long.Parse(string.Format(@"{0:D4}{1:D4}{2:D4}{3:D4}",
-                    version.Major, version.Minor, version.Build, version.Revision));
+                    version.Major.ToNormalizedPart(),
+                    version.Minor.ToNormalizedPart(),
+                    version.Build.ToNormalizedPart(),
+                    version.Revision.ToNormalizedPart()));
+        }
+
+        /// <summary>
+        /// Returns a normalized part corresponding to the <see cref="value"/>. This means
+        /// returning zero for negative values while allowing non negative values pass through.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private static int ToNormalizedPart(this int value)
+        {
+            return value < 0 ? 0 : value;
         }
     }
 }
