@@ -12,7 +12,7 @@ Some assumptions made going into the package:
 
 * Migrations are versioned depending on the .NET [System.Version](https://msdn.microsoft.com/en-us/library/system.version.aspx) class, as exposed via [VersionMigrationAttribute](http://github.com/mwpowellhtx/netdbmigrator/blob/master/src/Kingdom.Data.Migrator.Core/Attributes/VersionMigrationAttribute.cs).
 
-* I've also included a [TimeStampMigrationAttribute](http://github.com/mwpowellhtx/netdbmigrator/blob/master/src/Kingdom.Data.Migrator.Core/Attributes/TimeStampMigrationAttribute.cs) with the thought that sometimes versioning is more difficult to keep track of then time stamps. I have not tested this aspect yet as I tend to prefer versioning, but it's there if anyone would care to exercise it.
+* I've also included a [TimeStampMigrationAttribute](http://github.com/mwpowellhtx/netdbmigrator/blob/master/src/Kingdom.Data.Migrator.Core/Attributes/TimeStampMigrationAttribute.cs) which is based on [DateTime](http://msdn.microsoft.com/en-us/library/system.datetime.aspx), the though being that sometimes migration is easier by calendar schedules than actual version numbers. I have not tested this aspect yet as I tend to prefer versioning, but it's there if anyone would care to exercise it.
 
 * As mentioned there are two migration strategies: Version and DateTime. I did not spend a lot of time handling silly error conditions. Generally, you would never mix your versioning strategies. Either run with Version or DateTime, but never both.
 
