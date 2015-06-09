@@ -69,11 +69,11 @@ using (var runner = new SqlServerMigrationRunner<Version>(ConnectionString,
       <th>Description</th>
     </tr>
     <tr>
-      <td>1.0.0</td>
+      <td valign=top>1.0.0</td>
       <td>Initial version.</td>
     </tr>
     <tr>
-      <td>1.1.0</td>
+      <td valign=top>1.1.0</td>
       <td>
         <ul>
           <li>Migrators are now disposable. This is more useful since it affords a clear boundary when resources must be released, namely database contexts, connections, and so forth.</li>
