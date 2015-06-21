@@ -56,6 +56,9 @@
     <Compile Include="Migrations\MigrationBase.cs" />
     <Compile Include="AttributeKind.cs" />
     <Compile Include="Attributes\AbstractMigrationAttribute.cs" />
+    <Compile Include="Planners\IMigrationPlan.cs" />
+    <Compile Include="Planners\MigrationPlanBase.cs" />
+    <Compile Include="Planners\MigrationRunnerFactory.cs" />
     <Compile Include="Runners\MigrationRunnerBase.cs" />
     <Compile Include="Migrations\IMigration.cs" />
     <Compile Include="Runners\IMigrationRunner.cs" />

@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.SqlClient;
-using Kingdom.Data.Runners;
 using NUnit.Framework;
 
 namespace Kingdom.Data.Migrator.Tests
 {
     using Constraint = NUnit.Framework.Constraints.Constraint;
 
-    public class SqlServerMigrationRunnerTests : TestFixtureBase
+    public abstract class MigratorTestsBase : TestFixtureBase
     {
         /// <summary>
         /// DataSource: @"localhost"
@@ -33,7 +32,7 @@ namespace Kingdom.Data.Migrator.Tests
         /// <summary>
         /// Gets the ConnectionString.
         /// </summary>
-        private string ConnectionString
+        protected string ConnectionString
         {
             get
             {
@@ -96,22 +95,6 @@ namespace Kingdom.Data.Migrator.Tests
             }
 
             base.TestFixtureTearDown();
-        }
-
-        /// <summary>
-        /// Verifies that a migration runner runs.
-        /// </summary>
-        [Test]
-        public virtual void VerifyThatMigrationRunnerRuns()
-        {
-            //TODO: may pull together a series of full and partial downgrades and upgrades for test purposes.
-            // Run all the migrations discovered in the assembly rooting this test fixture.
-            using (var runner = new SqlServerMigrationRunner<Version>(ConnectionString,
-                typeof (SqlServerMigrationRunnerTests)))
-            {
-                runner.Down();
-                runner.Up();
-            }
         }
 
         /// <summary>

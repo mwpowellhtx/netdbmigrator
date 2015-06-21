@@ -54,8 +54,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MigratorTestsBase.cs" />
     <Compile Include="Migrations\ThisIsATestMigration.cs" />
-    <Compile Include="SqlServerMigrationRunnerTests.cs" />
+    <Compile Include="SqlServerMigrationPlanTests.cs" />
+    <Compile Include="SqlServerMigratorTests.cs" />
     <Compile Include="TestFixtureBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
