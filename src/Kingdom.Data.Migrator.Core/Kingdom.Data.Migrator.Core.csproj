@@ -53,10 +53,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MigrationDbContext.cs" />
-    <Compile Include="Migrations\AbstractMigration.cs" />
+    <Compile Include="Migrations\MigrationBase.cs" />
     <Compile Include="AttributeKind.cs" />
     <Compile Include="Attributes\AbstractMigrationAttribute.cs" />
-    <Compile Include="Runners\AbstractMigrationRunner.cs" />
+    <Compile Include="Runners\MigrationRunnerBase.cs" />
     <Compile Include="Migrations\IMigration.cs" />
     <Compile Include="Runners\IMigrationRunner.cs" />
     <Compile Include="Attributes\TimeStampMigrationAttribute.cs" />
@@ -69,7 +69,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Kingdom.Data.Migrator.Core.nuspec" />
+    <None Include="Kingdom.Data.Migrator.Core.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />

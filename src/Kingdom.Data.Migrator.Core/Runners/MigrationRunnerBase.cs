@@ -11,10 +11,15 @@ using Kingdom.Data.Migrations;
 
 namespace Kingdom.Data.Runners
 {
-    public abstract class AbstractMigrationRunner<TRunner, TValue>
+    /// <summary>
+    /// Migration runner base class.
+    /// </summary>
+    /// <typeparam name="TRunner"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    public abstract class MigrationRunnerBase<TRunner, TValue>
         : IMigrationRunner<TRunner, TValue>
         where TValue : IComparable<TValue>
-        where TRunner : AbstractMigrationRunner<TRunner, TValue>
+        where TRunner : MigrationRunnerBase<TRunner, TValue>
     {
         /// <summary>
         /// Gets the Context.
@@ -31,7 +36,7 @@ namespace Kingdom.Data.Runners
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="types"></param>
-        protected AbstractMigrationRunner(DbConnection connection,
+        protected MigrationRunnerBase(DbConnection connection,
             params Type[] types)
             : this(connection, types.Select(x => x.Assembly).ToArray())
         {
@@ -42,7 +47,7 @@ namespace Kingdom.Data.Runners
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="assemblies"></param>
-        protected AbstractMigrationRunner(DbConnection connection,
+        protected MigrationRunnerBase(DbConnection connection,
             params Assembly[] assemblies)
         {
             Context = new MigrationDbContext(connection, true);
@@ -52,7 +57,7 @@ namespace Kingdom.Data.Runners
         /// <summary>
         /// Finalizer
         /// </summary>
-        ~AbstractMigrationRunner()
+        ~MigrationRunnerBase()
         {
             Dispose(false);
         }
@@ -60,12 +65,12 @@ namespace Kingdom.Data.Runners
         /// <summary>
         /// Migrations backing field.
         /// </summary>
-        private IEnumerable<AbstractMigration> _migrations;
+        private IEnumerable<IMigration> _migrations;
 
         /// <summary>
         /// Gets the Migrations.
         /// </summary>
-        private IEnumerable<AbstractMigration> Migrations
+        private IEnumerable<IMigration> Migrations
         {
             get
             {
@@ -80,23 +85,23 @@ namespace Kingdom.Data.Runners
         /// </summary>
         /// <param name="migrations"></param>
         /// <returns></returns>
-        private bool TryLoad(out IEnumerable<AbstractMigration> migrations)
+        private bool TryLoad(out IEnumerable<IMigration> migrations)
         {
-            var migrationType = typeof (AbstractMigration);
+            var migrationBaseType = typeof (MigrationBase);
 
             var theActualTypes = Assemblies.SelectMany(x => x.GetTypes())
-                .Where(t => !t.IsAbstract && migrationType.IsAssignableFrom(t)).ToArray();
+                .Where(t => !t.IsAbstract && migrationBaseType.IsAssignableFrom(t)).ToArray();
 
-            var loaded = theActualTypes.Select(t => (AbstractMigration)
+            var loaded = theActualTypes.Select(t => (IMigration)
                 Activator.CreateInstance(t)).ToArray();
 
-            Debug.Assert(loaded.Select(x => x.Info.Attrib.GetType()).Distinct().Count() == 1,
+            Debug.Assert(loaded.Select(x => ((MigrationBase) x).Info.Attrib.GetType()).Distinct().Count() == 1,
                 @"Migration versioning must be consistently applied.");
 
             //Then inject the Context.
             migrations = loaded.Select(x =>
             {
-                x.Context = Context;
+                ((MigrationBase) x).Context = Context;
                 return x;
             }).ToArray();
 
@@ -131,11 +136,12 @@ namespace Kingdom.Data.Runners
         /// Up handler accepting a migration.
         /// </summary>
         /// <param name="migration"></param>
-        private void UpHandler(AbstractMigration migration)
+        private void UpHandler(IMigration migration)
         {
-            migration.Up();
+            var local = (MigrationBase) migration;
+            local.Up();
             var set = Context.Set<VersionInfo>();
-            var info = migration.Info.GetVersion();
+            var info = local.Info.GetVersion();
             set.Add(info);
             Context.SaveChanges();
         }
@@ -144,15 +150,16 @@ namespace Kingdom.Data.Runners
         /// Down handler accepting a migration.
         /// </summary>
         /// <param name="migration"></param>
-        private void DownHandler(AbstractMigration migration)
+        private void DownHandler(IMigration migration)
         {
-            migration.Down();
+            var local = (MigrationBase) migration;
+            local.Down();
             var set = Context.Set<VersionInfo>();
-            var info = set.SingleOrDefault(x => x.VersionId == migration.Info.Attrib.Id);
+            var info = set.SingleOrDefault(x => x.VersionId == local.Info.Attrib.Id);
             set.Remove(info);
             Context.SaveChanges();
         }
- 
+
         /// <summary>
         /// Migrates Up all versions.
         /// </summary>
@@ -171,8 +178,8 @@ namespace Kingdom.Data.Runners
                     var lastId = GetMaxAppliedVersion();
 
                     //Obtain the migrations that are eligible since the last migration.
-                    var migrations = Migrations.Where(m => m.Info.Attrib.Id > lastId)
-                        .OrderBy(m => m.Info.Attrib.Id).ToArray();
+                    var migrations = Migrations.Where(m => ((MigrationBase) m).Info.Attrib.Id > lastId)
+                        .OrderBy(m => ((MigrationBase) m).Info.Attrib.Id).ToArray();
 
                     return migrations;
                 });
@@ -191,8 +198,8 @@ namespace Kingdom.Data.Runners
                     var ids = GetAppliedMigrations().ToArray().Select(x => x.VersionId).ToArray();
 
                     //Obtain the migrations that correspond to those Ids.
-                    var migrations = Migrations.Where(m => ids.Contains(m.Info.Attrib.Id))
-                        .OrderByDescending(x => x.Info.Attrib.Id).ToArray();
+                    var migrations = Migrations.Where(m => ids.Contains(((MigrationBase) m).Info.Attrib.Id))
+                        .OrderByDescending(m => ((MigrationBase) m).Info.Attrib.Id).ToArray();
 
                     return migrations;
                 });
@@ -209,15 +216,15 @@ namespace Kingdom.Data.Runners
                 () =>
                 {
                     //Obtain the range of migrations that are eligible for downgrade.
-                    var migrations = Migrations.Where(m => ((TValue) m.Info.Attrib.Value)
+                    var migrations = Migrations.Where(m => ((TValue) ((MigrationBase) m).Info.Attrib.Value)
                         .CompareTo(maxValue) < 0).ToArray();
 
                     //Get the Ids of the applied migrations.
                     var ids = GetAppliedMigrations().ToArray().Select(x => x.VersionId).ToArray();
 
                     //Refine the actual set of migrations.
-                    var theMigrations = migrations.Where(m => !ids.Contains(m.Info.Attrib.Id))
-                        .OrderBy(x => x.Info.Attrib.Id).ToArray();
+                    var theMigrations = migrations.Where(m => !ids.Contains(((MigrationBase) m).Info.Attrib.Id))
+                        .OrderBy(m => ((MigrationBase) m).Info.Attrib.Id).ToArray();
 
                     return theMigrations;
                 });
@@ -234,15 +241,15 @@ namespace Kingdom.Data.Runners
                 () =>
                 {
                     //Obtain the range of migrations that are eligible for downgrade.
-                    var migrations = Migrations.Where(m => ((TValue) m.Info.Attrib.Value)
+                    var migrations = Migrations.Where(m => ((TValue) ((MigrationBase) m).Info.Attrib.Value)
                         .CompareTo(minValue) > 0).ToArray();
 
                     //Get the Ids of the applied migrations.
                     var ids = GetAppliedMigrations().ToArray().Select(x => x.VersionId).ToArray();
 
                     //Refine the actual set of migrations.
-                    var theMigrations = migrations.Where(m => ids.Contains(m.Info.Attrib.Id))
-                        .OrderByDescending(x => x.Info.Attrib.Id).ToArray();
+                    var theMigrations = migrations.Where(m => ids.Contains(((MigrationBase) m).Info.Attrib.Id))
+                        .OrderByDescending(m => ((MigrationBase) m).Info.Attrib.Id).ToArray();
 
                     return theMigrations;
                 });
@@ -263,7 +270,7 @@ namespace Kingdom.Data.Runners
         /// <param name="action"></param>
         /// <param name="get"></param>
         private void Migrate(MigrationActionDelegate action,
-            Func<IEnumerable<AbstractMigration>> get)
+            Func<IEnumerable<IMigration>> get)
         {
             //Confirmed that user security correctly reflects a created database.
             Context.Database.CreateIfNotExists();
@@ -279,7 +286,7 @@ namespace Kingdom.Data.Runners
         /// </summary>
         /// <param name="migration"></param>
         /// <param name="action"></param>
-        private void Migrate(AbstractMigration migration,
+        private void Migrate(IMigration migration,
             MigrationActionDelegate action)
         {
             using (var transaction = Context.Database.BeginTransaction(IsolationLevel.ReadCommitted))

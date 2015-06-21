@@ -6,7 +6,10 @@ using System.Linq;
 
 namespace Kingdom.Data.Migrations
 {
-    public abstract class AbstractMigration : IMigration
+    /// <summary>
+    /// Migration base class.
+    /// </summary>
+    public abstract class MigrationBase : IMigration
     {
         /// <summary>
         /// Gets the Description.
@@ -31,7 +34,7 @@ namespace Kingdom.Data.Migrations
         /// <summary>
         /// Protected Constructor
         /// </summary>
-        protected AbstractMigration()
+        protected MigrationBase()
         {
             Info = new MigrationInfo(this);
         }

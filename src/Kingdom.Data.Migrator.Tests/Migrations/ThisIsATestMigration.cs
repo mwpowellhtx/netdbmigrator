@@ -7,7 +7,7 @@ namespace Kingdom.Data.Migrator.Tests.Migrations
     /// This is a test migration.
     /// </summary>
     [VersionMigration(1, 0)]
-    public class ThisIsATestMigration : AbstractMigration
+    public class ThisIsATestMigration : MigrationBase
     {
         public override void Up()
         {

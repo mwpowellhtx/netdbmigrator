@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Kingdom.Data.Migrator.SqlServer</id>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <title>Kingdom.Data.Migrator.SqlServer</title>
     <authors>Michael W Powell</authors>
     <owners></owners>
@@ -22,7 +22,7 @@
     <copyright>Copyright © 2015</copyright>
     <dependencies>
         <group targetFramework="net45">
-          <dependency id="Kingdom.Data.Migrator.Core" version="1.1.0" />
+          <dependency id="Kingdom.Data.Migrator.Core" version="1.1.1" />
         </group>
     </dependencies>
     <references></references>

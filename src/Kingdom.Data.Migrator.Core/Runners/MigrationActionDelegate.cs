@@ -2,5 +2,9 @@ using Kingdom.Data.Migrations;
 
 namespace Kingdom.Data.Runners
 {
-    internal delegate void MigrationActionDelegate(AbstractMigration migration);
+    /// <summary>
+    /// Delegated migration action.
+    /// </summary>
+    /// <param name="migration"></param>
+    internal delegate void MigrationActionDelegate(IMigration migration);
 }

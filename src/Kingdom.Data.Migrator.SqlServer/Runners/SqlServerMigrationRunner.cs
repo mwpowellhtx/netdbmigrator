@@ -10,7 +10,7 @@ namespace Kingdom.Data.Runners
     /// </summary>
     /// <typeparam name="TValue"></typeparam>
     public class SqlServerMigrationRunner<TValue>
-        : AbstractMigrationRunner<SqlServerMigrationRunner<TValue>, TValue>
+        : MigrationRunnerBase<SqlServerMigrationRunner<TValue>, TValue>
         where TValue : IComparable<TValue>
     {
         /// <summary>

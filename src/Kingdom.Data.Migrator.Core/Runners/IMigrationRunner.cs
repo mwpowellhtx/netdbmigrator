@@ -2,9 +2,10 @@
 
 namespace Kingdom.Data.Runners
 {
-    public interface IMigrationRunner<out TRunner, in TValue> : IDisposable
-        where TValue : IComparable<TValue>
-        where TRunner : IMigrationRunner<TRunner, TValue>
+    /// <summary>
+    /// Migration runner basic services.
+    /// </summary>
+    public interface IMigrationRunner : IDisposable
     {
         /// <summary>
         /// Migrates Up all versions.
@@ -15,7 +16,17 @@ namespace Kingdom.Data.Runners
         /// Migrates Down all versions.
         /// </summary>
         void Down();
+    }
 
+    /// <summary>
+    /// Migration runner advanced services.
+    /// </summary>
+    /// <typeparam name="TRunner"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    public interface IMigrationRunner<out TRunner, in TValue> : IMigrationRunner
+        where TValue : IComparable<TValue>
+        where TRunner : IMigrationRunner<TRunner, TValue>
+    {
         /// <summary>
         /// Migrates Up to the <see cref="maxValue"/>.
         /// </summary>
