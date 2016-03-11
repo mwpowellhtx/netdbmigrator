@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kingdom.Data.Migrator.Core", "Kingdom.Data.Migrator.Core\Kingdom.Data.Migrator.Core.csproj", "{D654ACFA-A2B0-4850-BD6C-569593665A3A}"
 EndProject
@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{CE5FE1
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kingdom.Data.Migrator.Tests", "Kingdom.Data.Migrator.Tests\Kingdom.Data.Migrator.Tests.csproj", "{49BC5AA2-1AFA-4683-A1FF-0F17CAA48FB5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kingdom.Data.Migrator.Fluently", "Kingdom.Data.Migrator.Fluently\Kingdom.Data.Migrator.Fluently.csproj", "{29228F78-8D8D-41B0-8DAA-CEB432D00A33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +36,10 @@ Global
 		{49BC5AA2-1AFA-4683-A1FF-0F17CAA48FB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49BC5AA2-1AFA-4683-A1FF-0F17CAA48FB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49BC5AA2-1AFA-4683-A1FF-0F17CAA48FB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29228F78-8D8D-41B0-8DAA-CEB432D00A33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29228F78-8D8D-41B0-8DAA-CEB432D00A33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29228F78-8D8D-41B0-8DAA-CEB432D00A33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29228F78-8D8D-41B0-8DAA-CEB432D00A33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
