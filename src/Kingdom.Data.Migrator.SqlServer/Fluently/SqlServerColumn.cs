@@ -17,6 +17,16 @@ namespace Kingdom.Data
             _registry = new SqlServerDataTypeRegistry();
         }
 
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        /// <param name="columnName"></param>
+        public SqlServerColumn(string columnName)
+        {
+            Name = NamePath.Create(columnName);
+            _registry = new SqlServerDataTypeRegistry();
+        }
+
         protected override string FormatTypeWithPrecisionScale(SqlDbType type, int? a = null, int? b = null)
         {
             return _registry.GetDbTypeString(type, a, b);
