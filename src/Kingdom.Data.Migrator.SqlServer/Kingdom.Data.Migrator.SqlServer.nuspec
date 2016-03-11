@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Kingdom.Data.Migrator.SqlServer</id>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <title>Kingdom.Data.Migrator.SqlServer</title>
     <authors>Michael W Powell</authors>
     <owners></owners>
