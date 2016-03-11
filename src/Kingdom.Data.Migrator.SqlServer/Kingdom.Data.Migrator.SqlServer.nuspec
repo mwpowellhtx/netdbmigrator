@@ -2,18 +2,18 @@
 <package >
   <metadata>
     <id>Kingdom.Data.Migrator.SqlServer</id>
-    <version>1.1.1</version>
+    <version>1.2.0</version>
     <title>Kingdom.Data.Migrator.SqlServer</title>
     <authors>Michael W Powell</authors>
     <owners></owners>
-    <description>
-      Runs SQL migrations against the SqlServer database provider. Does this in a disciplined, versioned manner.
-    </description>
-    <releaseNotes>
-    </releaseNotes>
     <summary>
       Facilitates running database migratons in a disciplined, versioned manner.
     </summary>
+    <releaseNotes>
+    </releaseNotes>
+    <description>
+      Runs SQL migrations against the SqlServer database provider. Does this in a disciplined, versioned manner.
+    </description>
     <language>en-US</language>
     <projectUrl>http://github.com/mwpowellhtx/netdbmigrator/</projectUrl>
     <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>
@@ -22,7 +22,8 @@
     <copyright>Copyright © 2015</copyright>
     <dependencies>
         <group targetFramework="net45">
-          <dependency id="Kingdom.Data.Migrator.Core" version="1.1.1" />
+          <dependency id="Kingdom.Data.Migrator.Core" version="1.2.0" />
+          <dependency id="Kingdom.Data.Migrator.Fluently" version="1.0.0" />
         </group>
     </dependencies>
     <references></references>
