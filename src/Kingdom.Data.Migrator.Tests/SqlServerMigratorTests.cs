@@ -2,7 +2,7 @@
 using Kingdom.Data.Runners;
 using NUnit.Framework;
 
-namespace Kingdom.Data.Migrator.Tests
+namespace Kingdom.Data
 {
     public class SqlServerMigratorTests : MigratorTestsBase
     {

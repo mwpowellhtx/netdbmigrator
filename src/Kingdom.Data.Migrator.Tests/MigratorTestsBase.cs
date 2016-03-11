@@ -3,7 +3,7 @@ using System.Data;
 using System.Data.SqlClient;
 using NUnit.Framework;
 
-namespace Kingdom.Data.Migrator.Tests
+namespace Kingdom.Data
 {
     using Constraint = NUnit.Framework.Constraints.Constraint;
 

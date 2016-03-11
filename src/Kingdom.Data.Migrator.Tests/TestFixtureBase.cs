@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace Kingdom.Data.Migrator.Tests
+namespace Kingdom.Data
 {
     [TestFixture]
     public abstract class TestFixtureBase

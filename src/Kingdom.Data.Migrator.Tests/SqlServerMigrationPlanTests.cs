@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Kingdom.Data.Planners;
 using Kingdom.Data.Runners;
 
-namespace Kingdom.Data.Migrator.Tests
+namespace Kingdom.Data
 {
     /// <summary>
     /// 

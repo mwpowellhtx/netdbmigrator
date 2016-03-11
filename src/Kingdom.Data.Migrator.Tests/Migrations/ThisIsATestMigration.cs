@@ -1,8 +1,7 @@
-﻿using Kingdom.Data.Attributes;
-using Kingdom.Data.Migrations;
-
-namespace Kingdom.Data.Migrator.Tests.Migrations
+﻿namespace Kingdom.Data.Migrations
 {
+    using Attributes;
+
     /// <summary>
     /// This is a test migration.
     /// </summary>
