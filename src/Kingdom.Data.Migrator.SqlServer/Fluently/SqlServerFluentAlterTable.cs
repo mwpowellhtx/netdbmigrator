@@ -14,11 +14,13 @@
             var withCheckString = GetWithCheckTypeString();
             var alterTableTypeString = GetAlterTableTypeString();
 
+            var subjectKind = GetSubjectKind();
+
             var subjects = GetSubjectStrings();
             var delimitedSubjects = CommaDelimited(subjects);
 
-            var sql = string.Format(@"ALTER TABLE {0}{1} {2} {3};", TableName,
-                withCheckString, alterTableTypeString, delimitedSubjects);
+            var sql = string.Format(@"ALTER TABLE {0}{1} {2}{3} {4};", TableName,
+                withCheckString, alterTableTypeString, subjectKind, delimitedSubjects);
 
             return sql;
         }

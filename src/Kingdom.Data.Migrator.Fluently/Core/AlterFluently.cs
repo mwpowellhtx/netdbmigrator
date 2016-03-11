@@ -174,6 +174,27 @@ namespace Kingdom.Data
         }
 
         /// <summary>
+        /// Returns the kind of Subject we are talking about. This does not apply to all circumstances.
+        /// </summary>
+        /// <returns></returns>
+        protected string GetSubjectKind()
+        {
+            // ReSharper disable once SwitchStatementMissingSomeCases
+            switch (_type)
+            {
+                case AlterTableType.Add:
+                    return string.Empty;
+                case AlterTableType.Drop:
+                    var kinds = CheckSubjects(_droppables).OfType<ISubject>().Select(x => x.SubjectName);
+                    return string.Format(" {0}", kinds.Distinct().Single().Trim()).ToUpper();
+            }
+
+            throw ThrowNotSupportedException(() => string.Format(
+                "Alter type not supported: {0}",
+                _type == null ? "null" : _type.Value.ToString()));
+        }
+
+        /// <summary>
         /// Returns a collection of formatted Subject strings.
         /// </summary>
         /// <returns></returns>
