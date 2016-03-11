@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MigrationDbContext.cs" />
+    <Compile Include="Migrations\FluentMigrationBase.cs" />
     <Compile Include="Migrations\MigrationBase.cs" />
     <Compile Include="AttributeKind.cs" />
     <Compile Include="Attributes\AbstractMigrationAttribute.cs" />
@@ -77,7 +78,12 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Kingdom.Data.Migrator.Fluently\Kingdom.Data.Migrator.Fluently.csproj">
+      <Project>{29228F78-8D8D-41B0-8DAA-CEB432D00A33}</Project>
+      <Name>Kingdom.Data.Migrator.Fluently</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

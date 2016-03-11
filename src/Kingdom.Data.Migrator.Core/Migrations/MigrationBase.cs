@@ -3,6 +3,7 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Kingdom.Data.Migrations
 {
@@ -83,6 +84,40 @@ namespace Kingdom.Data.Migrations
             return !cleaned.Any()
                 ? (int?) null
                 : Context.Database.ExecuteSqlCommand(cleaned, parameters);
+        }
+
+        /// <summary>
+        /// Runs the <paramref name="sql"/> in an embedded
+        /// <see cref="!:https://msdn.microsoft.com/en-us/library/ms188332.aspx" >EXECUTE</see> statement.
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="parameters">TBD: Currently unsupported.</param>
+        /// <returns></returns>
+        protected int? ExecSql(string sql, params object[] parameters)
+        {
+            // TODO: may need/want to figure out how to pass parameters along to SQL through this
+            // TODO: may put in some processing for collapsing multiple lines into a single delimited line
+
+            var execSql = string.Format(sql);
+
+            return Context.Database.ExecuteSqlCommand(execSql);
+        }
+
+        /// <summary>
+        /// Runs the <paramref name="sql"/> in an embedded
+        /// <see cref="!:https://msdn.microsoft.com/en-us/library/ms188332.aspx" >EXECUTE</see> statement.
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="parameters">TBD: Currently unsupported.</param>
+        /// <returns></returns>
+        protected async Task<int?> ExecSqlAsync(string sql, params object[] parameters)
+        {
+            // TODO: may need/want to figure out how to pass parameters along to SQL through this
+            // TODO: may put in some processing for collapsing multiple lines into a single delimited line
+
+            var execSql = string.Format(sql);
+
+            return await Context.Database.ExecuteSqlCommandAsync(execSql);
         }
 
         /// <summary>
