@@ -76,4 +76,6 @@
         /// </summary>
         CheckType? WithCheck { get; set; }
     }
+
+    //TODO: TBD: may need to consider an alter table fluent "agent" of sorts; sort of an ALTER TABLE <AGENT/>
 }

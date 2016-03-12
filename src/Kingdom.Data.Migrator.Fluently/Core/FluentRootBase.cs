@@ -5,16 +5,7 @@ namespace Kingdom.Data
     /// <summary>
     /// Represents a fluent root base class.
     /// </summary>
-    public abstract class FluentRootBase
+    public abstract class FluentRootBase : DataBase
     {
-        /// <summary>
-        /// Returns a comma delimited set of <paramref name="clauses"/>.
-        /// </summary>
-        /// <param name="clauses"></param>
-        /// <returns></returns>
-        protected string CommaDelimited(IEnumerable<object> clauses)
-        {
-            return string.Join(", ", clauses);
-        }
     }
 }

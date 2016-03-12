@@ -1,74 +1,30 @@
 ﻿namespace Kingdom.Data
 {
     /// <summary>
-    /// Represents general Column Attributes.
+    /// Data attribute interface.
     /// </summary>
-    public interface IColumnAttribute
+    public interface IDataAttribute
     {
     }
 
     /// <summary>
-    /// Precision column attribute.
+    /// Data attribute interface.
     /// </summary>
-    public interface IPrecisionColumnAttribute : IColumnAttribute
+    /// <typeparam name="T"></typeparam>
+    public interface IDataAttribute<T> : IDataAttribute
     {
         /// <summary>
-        /// Gets or sets the Precision.
+        /// Gets or sets the attribute Value.
         /// </summary>
-        int Precision { get; set; }
+        T Value { get; set; }
     }
 
     /// <summary>
-    /// Scale column attribute.
+    /// Data attribute concept.
     /// </summary>
-    public interface IScaleColumnAttribute : IColumnAttribute
+    /// <typeparam name="T"></typeparam>
+    public abstract class DataAttributeBase<T> : IDataAttribute<T>
     {
-        /// <summary>
-        /// Gets or sets the Scale.
-        /// </summary>
-        int Scale { get; set; }
-    }
-
-    /// <summary>
-    /// Nullable column attribute.
-    /// </summary>
-    public interface INullableColumnAttribute : IColumnAttribute
-    {
-        /// <summary>
-        /// Gets or sets whether CanBeNullable.
-        /// </summary>
-        bool CanBeNull { get; set; }
-    }
-
-    /// <summary>
-    /// Column attribute base class.
-    /// </summary>
-    public abstract class ColumnAttributeBase : IColumnAttribute
-    {
-    }
-
-    /// <summary>
-    /// Precision column attribute. Used for length for character based and similar types.
-    /// Also used for numeric for numerical precision.
-    /// </summary>
-    public class PrecisionColumnAttribute : ColumnAttributeBase, IPrecisionColumnAttribute
-    {
-        public int Precision { get; set; }
-    }
-
-    /// <summary>
-    /// Scale column attribute.
-    /// </summary>
-    public class ScaleColumnAttribute : ColumnAttributeBase, IScaleColumnAttribute
-    {
-        public int Scale { get; set; }
-    }
-
-    /// <summary>
-    /// Nullable column attribute.
-    /// </summary>
-    public class NullableColumnAttribute : ColumnAttributeBase, INullableColumnAttribute
-    {
-        public bool CanBeNull { get; set; }
+        public T Value { get; set; }
     }
 }

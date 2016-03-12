@@ -78,9 +78,8 @@ namespace Kingdom.Data
         protected static Exception ThrowNotSupportedException<TDbType>(TDbType type, int? a, int? b)
         {
             // TODO: may enforce that Type should be an Enum type.
-            var message = string.Format("Database type {0}{1} is unsupported.", type,
-                GetDataTypeLength(a, b));
-            return new NotSupportedException(message);
+            return ((object) null).ThrowNotSupportedException(() => string.Format(
+                "Database type {0}{1} is unsupported.", type, GetDataTypeLength(a, b)));
         }
 
         /// <summary>

@@ -42,12 +42,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\AlterFluently.cs" />
+    <Compile Include="Core\ColumnAttributes.cs" />
+    <Compile Include="Core\ConstraintAttributes.cs" />
+    <Compile Include="Core\DataBase.cs" />
+    <Compile Include="Core\FluentCollection.cs" />
     <Compile Include="Core\Fluently.cs" />
     <Compile Include="Core\FluentRootBase.cs" />
+    <Compile Include="Core\HasDataAttributes.cs" />
+    <Compile Include="Core\PrimaryKeyOrUniqueConstraintBase.cs" />
+    <Compile Include="Core\Subjects.cs" />
+    <Compile Include="Extensions\EnumerationExtensionMethods.cs" />
+    <Compile Include="Extensions\ExceptionHandlingExtensionMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\Attributes.cs" />
     <Compile Include="Core\ColumnBase.cs" />
-    <Compile Include="Core\Constraints.cs" />
+    <Compile Include="Core\ConstraintBase.cs" />
     <Compile Include="Core\CrossCutting.cs" />
     <Compile Include="Core\DataTypeRegistry.cs" />
     <Compile Include="Core\Enums.cs" />

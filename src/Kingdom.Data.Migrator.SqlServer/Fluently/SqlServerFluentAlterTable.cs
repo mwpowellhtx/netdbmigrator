@@ -19,6 +19,7 @@
             var subjects = GetSubjectStrings();
             var delimitedSubjects = CommaDelimited(subjects);
 
+            // TODO: TBD: this pattern works for simple Add/Drop elements; may need to abstract this out a bit for more complex Alter <What/> Scenarios.
             var sql = string.Format(@"ALTER TABLE {0}{1} {2}{3} {4};", TableName,
                 withCheckString, alterTableTypeString, subjectKind, delimitedSubjects);
 

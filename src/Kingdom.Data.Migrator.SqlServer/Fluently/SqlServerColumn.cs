@@ -3,9 +3,16 @@ using System.Data;
 namespace Kingdom.Data
 {
     /// <summary>
+    /// Sql Server column interface.
+    /// </summary>
+    public interface ISqlServerColumn : IColumn<SqlDbType>
+    {
+    }
+
+    /// <summary>
     /// Represents a Sql Server column.
     /// </summary>
-    public class SqlServerColumn : ColumnBase<SqlDbType>
+    public class SqlServerColumn : ColumnBase<SqlDbType>, ISqlServerColumn
     {
         private readonly SqlServerDataTypeRegistry _registry;
 
@@ -35,13 +42,19 @@ namespace Kingdom.Data
         public override string GetAddableString()
         {
             // TODO: could add constraints here
-
-            return string.Format(@"{0} {1}{2}", Name, FormattedType, FormattedNullable);
+            var nullableString = GetNullableString();
+            return string.Format(@"{0} {1}{2}", Name, FormattedType, nullableString);
         }
 
         public override string GetDroppableString()
         {
             return Name.ToString();
+        }
+
+        public override string GetPrimaryKeyOrUniqueString()
+        {
+            var sortOrderString = GetSortOrderString();
+            return string.Format("{0} {1}", Name, sortOrderString);
         }
     }
 }

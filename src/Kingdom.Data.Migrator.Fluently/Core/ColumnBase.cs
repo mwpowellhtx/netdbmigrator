@@ -1,24 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Kingdom.Data
+﻿namespace Kingdom.Data
 {
     /// <summary>
-    /// Represents the Subject of a Sql statement.
+    /// Represents a Primary Key or Unique Index Column.
     /// </summary>
-    public interface ISubject
+    public interface IPrimaryKeyOrUniqueIndexColumn
     {
         /// <summary>
-        /// Gets the SubjectName.
+        /// Gets the Order.
         /// </summary>
-        string SubjectName { get; }
+        /// <see cref="SortOrder"/>
+        SortOrder? Order { get; }
+
+        /// <summary>
+        /// Returns the string representing the primary key or unique index column.
+        /// </summary>
+        /// <returns></returns>
+        string GetPrimaryKeyOrUniqueString();
     }
 
     /// <summary>
     /// Represents the Column concept.
     /// </summary>
-    public interface IColumn : ISubject, ITableAddable, ITableDroppable
+    public interface IColumn
+        : ISubject
+            , ITableAddable
+            , ITableDroppable
+            , IPrimaryKeyOrUniqueIndexColumn
+            , IHasDataAttributes<IColumnAttribute>
+            , IFluentCollection<IColumnAttribute, IColumn>
     {
         /// <summary>
         /// Gets or sets the Column Name.
@@ -35,13 +44,6 @@ namespace Kingdom.Data
         /// Gets whether CanBeNull.
         /// </summary>
         bool? CanBeNull { get; }
-
-        /// <summary>
-        /// Adds the <paramref name="attributes"/> to the Column.
-        /// </summary>
-        /// <param name="attributes"></param>
-        /// <returns></returns>
-        IColumn Add(params IColumnAttribute[] attributes);
     }
 
     /// <summary>
@@ -54,24 +56,21 @@ namespace Kingdom.Data
         /// Gets or sets the Type.
         /// </summary>
         TDbType Type { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Attributes.
-        /// </summary>
-        IList<IColumnAttribute> Attributes { get; set; }
     }
 
     /// <summary>
     /// Represents the Column concept.
     /// </summary>
-    public abstract class ColumnBase : IColumn
+    public abstract class ColumnBase
+        : DataBase<IColumnAttribute>
+            , IColumn
     {
         /// <summary>
         /// Gets the SubjectName: &quot;COLUMN&quot;
         /// </summary>
         public string SubjectName
         {
-            get { return "COLUMN"; }
+            get { return @"COLUMN"; }
         }
 
         //TODO: may put in some formatted, validation, etc...
@@ -96,92 +95,84 @@ namespace Kingdom.Data
         private bool? GetCanBeNull()
         {
             bool result;
-            return TryGetColumnAttribute(out result,
-                (NullableColumnAttribute x) => x.CanBeNull)
+            return TryFindColumnAttribute(Attributes, out result,
+                (NullableColumnAttribute x) => x.Value)
                 ? result
-                : (bool?) null;
+                : (bool?)null;
         }
 
         /// <summary>
-        /// Gets the FormattedNullable string.
+        /// Gets the Order.
         /// </summary>
-        protected string FormattedNullable
+        public SortOrder? Order
         {
-            get
-            {
-                // ReSharper disable once SwitchStatementMissingSomeCases
-                switch (CanBeNull)
-                {
-                    case true:
-                        return @" NULL";
-                    case false:
-                        return @" NOT NULL";
-                    default:
-                        return string.Empty;
-                }
-            }
+            get { return GetSortOrder(); }
         }
 
-        private IList<IColumnAttribute> _attributes;
-
-        /// <summary>
-        /// Gets or sets the Attributes.
-        /// </summary>
-        public IList<IColumnAttribute> Attributes
+        private SortOrder? GetSortOrder()
         {
-            get { return _attributes; }
-            set { _attributes = value ?? new List<IColumnAttribute>(); }
+            SortOrder result;
+            return TryFindColumnAttribute(Attributes, out result,
+                (SortOrderColumnAttribute x) => x.Value)
+                ? result
+                : (SortOrder?) null;
         }
 
         /// <summary>
-        /// Protecte constructor.
+        /// Returns the string representation of the <see cref="Order"/>.
         /// </summary>
-        protected ColumnBase()
-        {
-            _attributes = new List<IColumnAttribute>();
-        }
-
-        /// <summary>
-        /// Adds the <paramref name="attributes"/> to the Column.
-        /// </summary>
-        /// <param name="attributes"></param>
         /// <returns></returns>
-        public IColumn Add(params IColumnAttribute[] attributes)
+        /// <see cref="SortOrder"/>
+        protected string GetSortOrderString()
         {
-            foreach (var x in attributes) Attributes.Add(x);
+            var order = Order;
+
+            const SortOrder ascending = SortOrder.Ascending;
+            const SortOrder descending = SortOrder.Descending;
+
+            // ReSharper disable once SwitchStatementMissingSomeCases
+            switch (Order)
+            {
+                case SortOrder.Ascending:
+                    return ascending.ToString().Substring(0, 3).ToUpper();
+                case SortOrder.Descending:
+                    return descending.ToString().Substring(0, 4).ToUpper();
+            }
+
+            throw this.ThrowNotSupportedException(() => string.Format(
+                @"Sort order is not supported: {0}",
+                order == null ? "null" : order.Value.ToString()));
+        }
+
+        public IColumn Add(IColumnAttribute item, params IColumnAttribute[] items)
+        {
+            Attributes.Add(item);
+            foreach (var x in items) Attributes.Add(x);
             return this;
         }
 
         /// <summary>
-        /// Tries to return the value of the attributed column through <paramref name="result"/>.
-        /// If the attribute cannot be found, returns false.
+        /// Returns the Nullable string.
         /// </summary>
-        /// <typeparam name="TAttribute"></typeparam>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="result"></param>
-        /// <param name="getter"></param>
-        /// <returns></returns>
-        protected bool TryGetColumnAttribute<TAttribute, TResult>(out TResult result,
-            Func<TAttribute, TResult> getter)
-            where TAttribute : IColumnAttribute
+        protected string GetNullableString()
         {
-            var attribute = _attributes.OfType<TAttribute>().SingleOrDefault();
-            var found = attribute != null;
-            result = found ? getter(attribute) : default(TResult);
-            return found;
+            // ReSharper disable once SwitchStatementMissingSomeCases
+            switch (CanBeNull)
+            {
+                case true:
+                    return @" NULL";
+                case false:
+                    return @" NOT NULL";
+                default:
+                    return string.Empty;
+            }
         }
 
-        /// <summary>
-        /// Returns the <see cref="ITableAddable"/> string.
-        /// </summary>
-        /// <returns></returns>
         public abstract string GetAddableString();
 
-        /// <summary>
-        /// Returns the <see cref="ITableDroppable"/> string.
-        /// </summary>
-        /// <returns></returns>
         public abstract string GetDroppableString();
+
+        public abstract string GetPrimaryKeyOrUniqueString();
     }
 
     /// <summary>
@@ -209,11 +200,11 @@ namespace Kingdom.Data
             int scale;
 
             // These type conversions are intentional.
-            var foundPrecision = TryGetColumnAttribute(out precision,
-                (PrecisionColumnAttribute x) => x.Precision);
+            var foundPrecision = TryFindColumnAttribute(Attributes, out precision,
+                (PrecisionColumnAttribute x) => x.Value);
 
-            var foundScale = TryGetColumnAttribute(out scale,
-                (ScaleColumnAttribute x) => x.Scale);
+            var foundScale = TryFindColumnAttribute(Attributes, out scale,
+                (ScaleColumnAttribute x) => x.Value);
 
             if (foundPrecision && !foundScale)
                 return FormatTypeWithPrecisionScale(type, precision);

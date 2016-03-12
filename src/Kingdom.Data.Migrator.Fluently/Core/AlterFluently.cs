@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Kingdom.Data
@@ -60,6 +59,7 @@ namespace Kingdom.Data
             set { _type = _type ?? value; }
         }
 
+        //TODO: with check should be an attribute? would certainly fit the pattern...
         public CheckType? WithCheck
         {
             get { return _withCheck; }
@@ -81,7 +81,7 @@ namespace Kingdom.Data
                     return _type.Value.ToString().ToUpper();
             }
 
-            throw ThrowNotSupportedException(() => string.Format(
+            throw this.ThrowNotSupportedException(() => string.Format(
                 "Alter table type not supported: {0}",
                 _type == null ? "null" : _type.Value.ToString()));
         }
@@ -103,7 +103,7 @@ namespace Kingdom.Data
                     return string.Empty;
             }
 
-            throw ThrowNotSupportedException(() => string.Format(
+            throw this.ThrowNotSupportedException(() => string.Format(
                 "Alter table with check not supported: {0}",
                 _withCheck == null ? "null" : _withCheck.Value.ToString()));
         }
@@ -138,38 +138,23 @@ namespace Kingdom.Data
             return this;
         }
 
-        private static Exception ThrowNotSupportedException(Func<string> message)
-        {
-            return new NotSupportedException(message());
-        }
-
-        private static void CheckConsistentTypes<T>(params T[] items)
-        {
-            var types = items.Select(x => x.GetType()).Distinct().ToList();
-
-            if (types.Count > 1)
-            {
-                throw ThrowNotSupportedException(() => string.Format(
-                    "Alter subjects not homogenous: {0}.", string.Join(", ", types)));
-            }
-        }
-
-        private static void CheckExpectedType<T>(params T[] items)
-        {
-            var types = items.Select(x => x.GetType()).Distinct().ToList();
-
-            if (types.Count != 1)
-            {
-                throw ThrowNotSupportedException(() => string.Format(
-                    "Homogenous subject types expected: {0}.",
-                    string.Join(", ", types)));
-            }
-        }
-
         private static IList<T> CheckSubjects<T>(IList<T> items)
+            where T : ISubject
         {
-            CheckConsistentTypes(items);
-            CheckExpectedType(items);
+            var subjects = items.Select(x => x.SubjectName).Distinct().ToList();
+
+            if (!subjects.Any())
+            {
+                throw ((object) null).ThrowNotSupportedException(
+                    "At least one subject is required.");
+            }
+
+            if (subjects.Count != 1)
+            {
+                throw ((object) null).ThrowNotSupportedException(() => string.Format(
+                    "Alter subjects not homogenous: {0}", CommaDelimited(subjects)));
+            }
+
             return items;
         }
 
@@ -189,7 +174,7 @@ namespace Kingdom.Data
                     return string.Format(" {0}", kinds.Distinct().Single().Trim()).ToUpper();
             }
 
-            throw ThrowNotSupportedException(() => string.Format(
+            throw ((object) null).ThrowNotSupportedException(() => string.Format(
                 "Alter type not supported: {0}",
                 _type == null ? "null" : _type.Value.ToString()));
         }
@@ -209,7 +194,7 @@ namespace Kingdom.Data
                     return CheckSubjects(_droppables).Select(x => x.GetDroppableString());
             }
 
-            throw ThrowNotSupportedException(() => string.Format(
+            throw this.ThrowNotSupportedException(() => string.Format(
                 "Alter type not supported: {0}",
                 _type == null ? "null" : _type.Value.ToString()));
         }

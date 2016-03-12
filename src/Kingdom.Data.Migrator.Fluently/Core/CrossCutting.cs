@@ -3,7 +3,7 @@
     /// <summary>
     /// Table Addable interface.
     /// </summary>
-    public interface ITableAddable
+    public interface ITableAddable : ISubject
     {
         /// <summary>
         /// Returns the Addable string.
@@ -15,7 +15,7 @@
     /// <summary>
     /// Table Droppable interface.
     /// </summary>
-    public interface ITableDroppable
+    public interface ITableDroppable : ISubject
     {
         /// <summary>
         /// Returns the Droppable string.
