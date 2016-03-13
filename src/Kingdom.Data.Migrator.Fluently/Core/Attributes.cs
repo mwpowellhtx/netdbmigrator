@@ -22,9 +22,32 @@
     /// <summary>
     /// Data attribute concept.
     /// </summary>
+    public abstract class DataAttributeBase : IDataAttribute
+    {
+    }
+
+    /// <summary>
+    /// Data attribute concept.
+    /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class DataAttributeBase<T> : IDataAttribute<T>
+    public abstract class DataAttributeBase<T> : DataAttributeBase, IDataAttribute<T>
     {
         public T Value { get; set; }
+
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        protected DataAttributeBase()
+        {
+        }
+
+        /// <summary>
+        /// Protected constructor.
+        /// </summary>
+        /// <param name="value"></param>
+        protected DataAttributeBase(T value)
+        {
+            Value = value;
+        }
     }
 }

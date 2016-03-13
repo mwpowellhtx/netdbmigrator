@@ -1,18 +1,18 @@
-﻿using System.Collections.Generic;
-
-namespace Kingdom.Data
+﻿namespace Kingdom.Data
 {
     /// <summary>
     /// Indicates that the interface has data attributes.
     /// </summary>
+    /// <typeparam name="TParent"></typeparam>
     /// <typeparam name="T"></typeparam>
     /// <see cref="IDataAttribute"/>
-    public interface IHasDataAttributes<T>
+    public interface IHasDataAttributes<T, out TParent>
         where T : IDataAttribute
+        where TParent : IHasDataAttributes<T, TParent>
     {
         /// <summary>
-        /// Gets or sets the Attributes.
+        /// Gets the Attributes.
         /// </summary>
-        IList<T> Attributes { get; set; }
+        IFluentCollection<T, TParent> Attributes { get; }
     }
 }

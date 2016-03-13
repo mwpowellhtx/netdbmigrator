@@ -5,14 +5,17 @@ namespace Kingdom.Data
     /// <summary>
     /// Sql Server column interface.
     /// </summary>
-    public interface ISqlServerColumn : IColumn<SqlDbType>
+    /// <typeparam name="TParent"></typeparam>
+    public interface ISqlServerColumn<out TParent> : IColumn<SqlDbType, TParent>
+        where TParent : ISqlServerColumn<TParent>
     {
     }
 
     /// <summary>
     /// Represents a Sql Server column.
     /// </summary>
-    public class SqlServerColumn : ColumnBase<SqlDbType>, ISqlServerColumn
+    public class SqlServerColumn : ColumnBase<SqlDbType, SqlServerColumn>
+        , ISqlServerColumn<SqlServerColumn>
     {
         private readonly SqlServerDataTypeRegistry _registry;
 
@@ -43,10 +46,16 @@ namespace Kingdom.Data
         {
             // TODO: could add constraints here
             var nullableString = GetNullableString();
-            return string.Format(@"{0} {1}{2}", Name, FormattedType, nullableString);
+            var identityString = GetIdentityString();
+            return string.Format(@"{0} {1}{2}{3}", Name, FormattedType, identityString, nullableString);
         }
 
         public override string GetDroppableString()
+        {
+            return Name.ToString();
+        }
+
+        public override string GetDefaultString()
         {
             return Name.ToString();
         }

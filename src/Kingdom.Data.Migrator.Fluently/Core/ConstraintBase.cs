@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Kingdom.Data
 {
@@ -9,7 +8,6 @@ namespace Kingdom.Data
     public interface IConstraint
         : ITableAddable
             , ITableDroppable
-            , IFluentCollection<IConstraintAttribute, IConstraint>
     {
         /// <summary>
         /// Gets or sets the Constraint Name.
@@ -20,9 +18,11 @@ namespace Kingdom.Data
     /// <summary>
     /// Represents the base Constraint concept.
     /// </summary>
-    public abstract class ConstraintBase
-        : DataBase<IConstraintAttribute>
+    /// <typeparam name="TParent"></typeparam>
+    public abstract class ConstraintBase<TParent>
+        : DataBase<IConstraintAttribute, TParent>
             , IConstraint
+        where TParent : ConstraintBase<TParent>
     {
         /// <summary>
         /// Gets the SubjectName: &quot;CONSTRAINT&quot;
@@ -41,14 +41,6 @@ namespace Kingdom.Data
         /// Gets or sets the ColumnNames.
         /// </summary>
         public IList<INamePath> ColumnNames { get; set; }
-
-        public IConstraint Add(IConstraintAttribute item, params IConstraintAttribute[] items)
-        {
-            Attributes.Add(item);
-            foreach (var x in items)
-                Attributes.Add(x);
-            return this;
-        }
 
         /// <summary>
         /// Returns the string representing the Fluent addable operation.
@@ -69,15 +61,23 @@ namespace Kingdom.Data
     /// <summary>
     /// Indicates that the interface should have index columns.
     /// </summary>
-    public interface IHasIndexColumns<TParent>
+    /// <typeparam name="TColumn"></typeparam>
+    /// <typeparam name="TParent"></typeparam>
+    public interface IHasIndexColumns<TColumn, TParent>
+        where TColumn : IColumn
+        where TParent : IHasIndexColumns<TColumn, TParent>
     {
         /// <summary>
         /// Represents the key Columns.
         /// </summary>
-        IFluentCollection<IColumn, TParent> KeyColumns { get; set; }
+        IFluentCollection<TColumn, TParent> KeyColumns { get; set; }
     }
 
-    public interface IForeignKeyConstraint<TParent> : IConstraint, IHasIndexColumns<TParent>
+    // TODO: fill in the column gaps next
+    public interface IForeignKeyConstraint<TParent>
+        : IConstraint
+            , IHasIndexColumns<IColumn, TParent>
+        where TParent : IForeignKeyConstraint<TParent>
     {
         INamePath ReferenceTableName { get; set; }
 
@@ -86,17 +86,5 @@ namespace Kingdom.Data
         ForeignKeyAction? OnDeleteAction { get; set; }
 
         ForeignKeyAction? OnUpdateAction { get; set; }
-    }
-
-    public interface IDefaultConstraint : IConstraint
-    {
-        IColumn Column { get; set; }
-    }
-
-    public interface IDefaultConstraint<T> : IDefaultConstraint
-    {
-        T Value { get; set; }
-
-        Func<T, string> ValueFormatter { get; set; }
     }
 }

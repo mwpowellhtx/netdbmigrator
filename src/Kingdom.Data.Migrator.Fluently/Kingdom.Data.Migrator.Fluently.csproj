@@ -45,6 +45,7 @@
     <Compile Include="Core\ColumnAttributes.cs" />
     <Compile Include="Core\ConstraintAttributes.cs" />
     <Compile Include="Core\DataBase.cs" />
+    <Compile Include="Core\DefaultConstraintBase.cs" />
     <Compile Include="Core\FluentCollection.cs" />
     <Compile Include="Core\Fluently.cs" />
     <Compile Include="Core\FluentRootBase.cs" />

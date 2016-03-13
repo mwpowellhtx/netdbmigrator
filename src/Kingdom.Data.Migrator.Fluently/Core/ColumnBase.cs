@@ -1,9 +1,32 @@
 ﻿namespace Kingdom.Data
 {
     /// <summary>
-    /// Represents a Primary Key or Unique Index Column.
+    /// Column interface.
     /// </summary>
-    public interface IPrimaryKeyOrUniqueIndexColumn
+    public interface IColumn : ITableAddable, ITableDroppable
+    {
+        /// <summary>
+        /// Gets or sets the Column Name.
+        /// </summary>
+        INamePath Name { get; set; }
+    }
+
+    /// <summary>
+    /// Represents the bits that represent a Column to the Default Constraint.
+    /// </summary>
+    public interface IDefaultColumn : IColumn
+    {
+        /// <summary>
+        /// Gets the string representation of the column for Default Constraint purposes.
+        /// </summary>
+        /// <returns></returns>
+        string GetDefaultString();
+    }
+
+    /// <summary>
+    /// Primary key or unique index column.
+    /// </summary>
+    public interface IPrimaryKeyOrUniqueIndexColumn : IColumn
     {
         /// <summary>
         /// Gets the Order.
@@ -19,21 +42,25 @@
     }
 
     /// <summary>
+    /// Represents a Primary Key or Unique Index Column.
+    /// </summary>
+    /// <typeparam name="TParent"></typeparam>
+    public interface IPrimaryKeyOrUniqueIndexColumn<out TParent>
+        : IPrimaryKeyOrUniqueIndexColumn
+        where TParent : IPrimaryKeyOrUniqueIndexColumn<TParent>
+    {
+    }
+
+    /// <summary>
     /// Represents the Column concept.
     /// </summary>
-    public interface IColumn
-        : ISubject
-            , ITableAddable
-            , ITableDroppable
-            , IPrimaryKeyOrUniqueIndexColumn
-            , IHasDataAttributes<IColumnAttribute>
-            , IFluentCollection<IColumnAttribute, IColumn>
+    /// <typeparam name="TParent"></typeparam>
+    public interface IColumn<out TParent>
+        : IDefaultColumn
+            , IPrimaryKeyOrUniqueIndexColumn<TParent>
+            , IHasDataAttributes<IColumnAttribute, TParent>
+        where TParent : IColumn<TParent>
     {
-        /// <summary>
-        /// Gets or sets the Column Name.
-        /// </summary>
-        INamePath Name { get; set; }
-
         /// <summary>
         /// Gets the FormattedType.
         /// </summary>
@@ -44,13 +71,33 @@
         /// Gets whether CanBeNull.
         /// </summary>
         bool? CanBeNull { get; }
+
+        /// <summary>
+        /// Gets whether Has Identity.
+        /// </summary>
+        /// <see cref="IIdentityColumnAttribute"/>
+        /// <see cref="ISeededIdentityColumnAttribute"/>
+        bool HasIdentity { get; }
+
+        /// <summary>
+        /// Gets the IdentitySeed if specified.
+        /// </summary>
+        int? IdentitySeed { get; }
+
+        /// <summary>
+        /// Gets the IdentityIncrement if specified.
+        /// </summary>
+        int? IdentityIncrement { get; }
     }
 
     /// <summary>
     /// Represents the Column concept.
     /// </summary>
     /// <typeparam name="TDbType"></typeparam>
-    public interface IColumn<TDbType> : IColumn
+    /// <typeparam name="TParent"></typeparam>
+    public interface IColumn<TDbType, out TParent>
+        : IColumn<TParent>
+        where TParent : IColumn<TDbType, TParent>
     {
         /// <summary>
         /// Gets or sets the Type.
@@ -61,9 +108,11 @@
     /// <summary>
     /// Represents the Column concept.
     /// </summary>
-    public abstract class ColumnBase
-        : DataBase<IColumnAttribute>
-            , IColumn
+    /// <typeparam name="TParent"></typeparam>
+    public abstract class ColumnBase<TParent>
+        : DataBase<IColumnAttribute, TParent>
+            , IColumn<TParent>
+        where TParent : ColumnBase<TParent>
     {
         /// <summary>
         /// Gets the SubjectName: &quot;COLUMN&quot;
@@ -89,16 +138,81 @@
         /// </summary>
         public bool? CanBeNull
         {
-            get { return GetCanBeNull(); }
+            get
+            {
+                bool result;
+                return Attributes.TryFindColumnAttribute(out result, (NullableColumnAttribute x) => x.Value)
+                    ? result
+                    : (bool?) null;
+            }
         }
 
-        private bool? GetCanBeNull()
+        /// <summary>
+        /// Gets whether Has Identity.
+        /// </summary>
+        public bool HasIdentity
         {
-            bool result;
-            return TryFindColumnAttribute(Attributes, out result,
-                (NullableColumnAttribute x) => x.Value)
-                ? result
-                : (bool?)null;
+            get
+            {
+                return Attributes.TryColumnAttributeExists((IColumnAttribute x) =>
+                    x is IIdentityColumnAttribute || x is ISeededIdentityColumnAttribute);
+            }
+        }
+
+        /// <summary>
+        /// Gets the IdentitySeed if specified.
+        /// </summary>
+        public int? IdentitySeed
+        {
+            get
+            {
+                int? result;
+                return Attributes.TryFindColumnAttribute(out result, (SeededIdentityColumnAttribute x) => x.Value)
+                    ? result
+                    : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the IdentityIncrement if specified.
+        /// </summary>
+        public int? IdentityIncrement
+        {
+            get
+            {
+                int? result;
+                return Attributes.TryFindColumnAttribute(out result, (SeededIdentityColumnAttribute x) => x.Increment)
+                    ? result
+                    : null;
+            }
+        }
+
+        /// <summary>
+        /// Returns the formatted Identity Seed string, with or without <see cref="IdentitySeed"/>
+        /// and <see cref="IdentityIncrement"/>. Returns <see cref="string.Empty"/> when there is
+        /// either no seed or no increment, both of which are required for this to appear.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual string GetIdentitySeedString()
+        {
+            var seed = IdentitySeed;
+            var increment = IdentityIncrement;
+
+            return seed == null || increment == null
+                ? string.Empty
+                : string.Format(@"({0}, {1})", seed, increment);
+        }
+
+        /// <summary>
+        /// Returns the formatted Identity string.
+        /// </summary>
+        /// <returns></returns>
+        /// <see cref="GetIdentitySeedString"/>
+        protected string GetIdentityString()
+        {
+            return HasIdentity
+                ? string.Format(@" IDENTITY{0}", GetIdentitySeedString())
+                : string.Empty;
         }
 
         /// <summary>
@@ -106,16 +220,13 @@
         /// </summary>
         public SortOrder? Order
         {
-            get { return GetSortOrder(); }
-        }
-
-        private SortOrder? GetSortOrder()
-        {
-            SortOrder result;
-            return TryFindColumnAttribute(Attributes, out result,
-                (SortOrderColumnAttribute x) => x.Value)
-                ? result
-                : (SortOrder?) null;
+            get
+            {
+                SortOrder result;
+                return Attributes.TryFindColumnAttribute(out result, (SortOrderColumnAttribute x) => x.Value)
+                    ? result
+                    : (SortOrder?) null;
+            }
         }
 
         /// <summary>
@@ -144,13 +255,6 @@
                 order == null ? "null" : order.Value.ToString()));
         }
 
-        public IColumn Add(IColumnAttribute item, params IColumnAttribute[] items)
-        {
-            Attributes.Add(item);
-            foreach (var x in items) Attributes.Add(x);
-            return this;
-        }
-
         /// <summary>
         /// Returns the Nullable string.
         /// </summary>
@@ -173,13 +277,19 @@
         public abstract string GetDroppableString();
 
         public abstract string GetPrimaryKeyOrUniqueString();
+
+        public abstract string GetDefaultString();
     }
 
     /// <summary>
     /// Represents the Column concept.
     /// </summary>
+    /// <typeparam name="TParent"></typeparam>
     /// <typeparam name="TDbType"></typeparam>
-    public abstract class ColumnBase<TDbType> : ColumnBase, IColumn<TDbType>
+    public abstract class ColumnBase<TDbType, TParent>
+        : ColumnBase<TParent>
+            , IColumn<TDbType, TParent>
+        where TParent : ColumnBase<TDbType, TParent>
     {
         /// <summary>
         /// Gets or sets the Type.
@@ -200,10 +310,10 @@
             int scale;
 
             // These type conversions are intentional.
-            var foundPrecision = TryFindColumnAttribute(Attributes, out precision,
+            var foundPrecision = Attributes.TryFindColumnAttribute(out precision,
                 (PrecisionColumnAttribute x) => x.Value);
 
-            var foundScale = TryFindColumnAttribute(Attributes, out scale,
+            var foundScale = Attributes.TryFindColumnAttribute(out scale,
                 (ScaleColumnAttribute x) => x.Value);
 
             if (foundPrecision && !foundScale)

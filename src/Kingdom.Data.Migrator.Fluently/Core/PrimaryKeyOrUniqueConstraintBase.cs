@@ -5,9 +5,11 @@ namespace Kingdom.Data
     /// <summary>
     /// Primary Key or Unique Index constraint.
     /// </summary>
-    public interface IPrimaryKeyOrUniqueConstraint
+    /// <typeparam name="TParent"></typeparam>
+    public interface IPrimaryKeyOrUniqueConstraint<TParent>
         : IConstraint
-            , IHasIndexColumns<IPrimaryKeyOrUniqueConstraint>
+            , IHasIndexColumns<IPrimaryKeyOrUniqueIndexColumn, TParent>
+        where TParent : IPrimaryKeyOrUniqueConstraint<TParent>
     {
         /// <summary>
         /// Gets the Clustered type.
@@ -24,17 +26,18 @@ namespace Kingdom.Data
     /// <summary>
     /// Primary key or unique index constraint base class.
     /// </summary>
-    public abstract class PrimaryKeyOrUniqueConstraintBase
-        : ConstraintBase
-            , IPrimaryKeyOrUniqueConstraint
+    /// <typeparam name="TParent"></typeparam>
+    public abstract class PrimaryKeyOrUniqueConstraintBase<TParent>
+        : ConstraintBase<TParent>
+            , IPrimaryKeyOrUniqueConstraint<TParent>
+        where TParent : PrimaryKeyOrUniqueConstraintBase<TParent>
     {
         public ClusteredType? Clustered
         {
             get
             {
                 ClusteredType? result;
-                return TryFindColumnAttribute<IClusteredConstraintAttribute, ClusteredType?>(
-                    Attributes, out result, x => x.Value)
+                return Attributes.TryFindColumnAttribute(out result, (ClusteredConstraintAttribute x) => x.Value)
                     ? result
                     : null;
             }
@@ -49,8 +52,7 @@ namespace Kingdom.Data
             {
                 TableIndexType result;
 
-                if (!TryFindColumnAttribute<ITableIndexConstraintAttribute, TableIndexType>(
-                    Attributes, out result, x => x.Value))
+                if (!Attributes.TryFindColumnAttribute(out result, (TableIndexConstraintAttribute x) => x.Value))
                 {
                     throw this.ThrowNotSupportedException(() =>
                     {
@@ -63,15 +65,16 @@ namespace Kingdom.Data
             }
         }
 
-        private IFluentCollection<IColumn, IPrimaryKeyOrUniqueConstraint> _keyColumns;
+        private IFluentCollection<IPrimaryKeyOrUniqueIndexColumn, TParent> _keyColumns;
 
-        public IFluentCollection<IColumn, IPrimaryKeyOrUniqueConstraint> KeyColumns
+        public IFluentCollection<IPrimaryKeyOrUniqueIndexColumn, TParent> KeyColumns
         {
             get { return _keyColumns; }
             set
             {
-                _keyColumns = value ?? new FluentCollection<
-                    IColumn, IPrimaryKeyOrUniqueConstraint>(this);
+                _keyColumns
+                    = value
+                      ?? new FluentCollection<IPrimaryKeyOrUniqueIndexColumn, TParent>((TParent) this);
             }
         }
 
@@ -123,8 +126,12 @@ namespace Kingdom.Data
         {
             // TODO: TBD: some or all of this may be Sql Server specific; to be specialized at the appropriate level.
             var tableIndexString = GetTableIndexString().Trim();
+
             var clusteredString = GetClusteredString();
-            var columns = CommaDelimited(KeyColumns.ToString(x => x.GetPrimaryKeyOrUniqueString()));
+
+            // TODO: TBD: so I think this is close to working: just need to work out a couple of kinks in the outer edges of usage
+            var columns = CommaDelimited(KeyColumns.Items.Select(x => x.GetPrimaryKeyOrUniqueString()));
+
             return string.Format("{0} {1} {2}{3} ({4})", SubjectName, Name, tableIndexString, clusteredString, columns);
         }
     }

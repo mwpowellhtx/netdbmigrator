@@ -9,20 +9,33 @@ namespace Kingdom.Data
 
     public class FluentSqlServerAlterTableTests : FluentlyAlterTestFixtureBase<SqlServerFluentAlterTable>
     {
-        private static IColumn CreateColumn(string columnName)
+        private static TParent CreateColumn<TParent>(string columnName)
+            where TParent : class, IColumn<TParent>, new()
         {
-            return new SqlServerColumn {Name = NamePath.Create(columnName)};
+            return new TParent {Name = NamePath.Create(columnName)};
         }
 
-        private static IColumn CreateColumn(string columnName, SqlDbType type)
+        private static TParent CreateColumn<TParent>(string columnName, SqlDbType type)
+            where TParent : class, IColumn<SqlDbType, TParent>, new()
         {
-            return new SqlServerColumn {Name = NamePath.Create(columnName), Type = type};
+            return new TParent {Name = NamePath.Create(columnName), Type = type};
         }
 
-        private static IConstraint CreateConstraint<TConstraint>(
-            string constraintName, Action<TConstraint> initialize)
+        private static SqlServerColumn CreateSqlServerColumn(string columnName)
+        {
+            return CreateColumn<SqlServerColumn>(columnName);
+        }
+
+        private static SqlServerColumn CreateSqlServerColumn(string columnName, SqlDbType type)
+        {
+            return CreateColumn<SqlServerColumn>(columnName, type);
+        }
+
+        private static TConstraint CreateConstraint<TConstraint>(
+            string constraintName, Action<TConstraint> initialize = null)
             where TConstraint : class, IConstraint, new()
         {
+            initialize = initialize ?? (c => { });
             var result = new TConstraint {Name = NamePath.Create(constraintName)};
             initialize(result);
             return result;
@@ -48,29 +61,55 @@ namespace Kingdom.Data
             const SqlDbType varBinaryType = SqlDbType.VarBinary;
             const SqlDbType floatType = SqlDbType.Float;
 
-            yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration(
-                CreateColumn(intName, intType).Add(new NullableColumnAttribute())
-                , CreateColumn(bufferName, varBinaryType).Add(new PrecisionColumnAttribute {Value = 16})
-                , CreateColumn(floatName, floatType).Add(new PrecisionColumnAttribute {Value = 42},
-                    new ScaleColumnAttribute {Value = 3})).ToValuesFixture()
-                , "ALTER TABLE [dbo].[foo] ADD [myInt] [INT] NOT NULL, [myBuffer] [VARBINARY](16), [myFloat] [FLOAT](42);"
+            yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration<IColumn>(
+                CreateSqlServerColumn(intName, intType).Attributes
+                    .Add(new NullableColumnAttribute()),
+                CreateSqlServerColumn(bufferName, varBinaryType).Attributes
+                    .Add(new PrecisionColumnAttribute(16))
+                , CreateSqlServerColumn(floatName, floatType).Attributes
+                    .Add(new PrecisionColumnAttribute(42), new ScaleColumnAttribute(3))
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[foo] ADD [myInt] [INT] NOT NULL"
+                  + ", [myBuffer] [VARBINARY](16), [myFloat] [FLOAT](42);"
                 );
 
-            yield return new TestCaseData(barNamePath(), CheckType.Check, BuildEnumeration(
-                CreateColumn(intName, intType).Add(new NullableColumnAttribute())
-                , CreateColumn(bufferName, varBinaryType).Add(new NullableColumnAttribute {Value = true}
-                    , new PrecisionColumnAttribute {Value = 16})
-                , CreateColumn(floatName, floatType).Add(new PrecisionColumnAttribute {Value = 42},
-                    new ScaleColumnAttribute {Value = 3})).ToValuesFixture()
-                , "ALTER TABLE [dbo].[bar] WITH CHECK ADD [myInt] [INT] NOT NULL, [myBuffer] [VARBINARY](16) NULL, [myFloat] [FLOAT](42);"
+            yield return new TestCaseData(barNamePath(), CheckType.Check, BuildEnumeration<IColumn>(
+                CreateSqlServerColumn(intName, intType).Attributes
+                    .Add(new NullableColumnAttribute())
+                , CreateSqlServerColumn(bufferName, varBinaryType).Attributes
+                    .Add(new NullableColumnAttribute(true)
+                        , new PrecisionColumnAttribute(16))
+                , CreateSqlServerColumn(floatName, floatType).Attributes
+                    .Add(new PrecisionColumnAttribute(42), new ScaleColumnAttribute(3))
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[bar] WITH CHECK ADD [myInt] [INT] NOT NULL"
+                  + ", [myBuffer] [VARBINARY](16) NULL, [myFloat] [FLOAT](42);"
                 );
 
-            yield return new TestCaseData(fizNamePath(), CheckType.NoCheck, BuildEnumeration(
-                CreateColumn(intName, intType).Add(new NullableColumnAttribute())
-                , CreateColumn(bufferName, varBinaryType).Add(new PrecisionColumnAttribute {Value = 16})
-                , CreateColumn(floatName, floatType).Add(new PrecisionColumnAttribute {Value = 42}
-                    , new ScaleColumnAttribute {Value = 3})).ToValuesFixture()
-                , "ALTER TABLE [dbo].[fiz] WITH NOCHECK ADD [myInt] [INT] NOT NULL, [myBuffer] [VARBINARY](16), [myFloat] [FLOAT](42);"
+            yield return new TestCaseData(fizNamePath(), CheckType.NoCheck, BuildEnumeration<IColumn>(
+                CreateSqlServerColumn(intName, intType).Attributes
+                    .Add(new NullableColumnAttribute())
+                , CreateSqlServerColumn(bufferName, varBinaryType).Attributes
+                    .Add(new PrecisionColumnAttribute(16))
+                , CreateSqlServerColumn(floatName, floatType)
+                    .Attributes.Add(new PrecisionColumnAttribute(42), new ScaleColumnAttribute(3))
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] WITH NOCHECK ADD [myInt] [INT] NOT NULL"
+                  + ", [myBuffer] [VARBINARY](16), [myFloat] [FLOAT](42);"
+                );
+
+            yield return new TestCaseData(fizNamePath(), CheckType.NoCheck, BuildEnumeration<IColumn>(
+                CreateSqlServerColumn(intName, intType).Attributes
+                    .Add(new IdentityColumnAttribute(), new NullableColumnAttribute())
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] WITH NOCHECK ADD [myInt] [INT] IDENTITY NOT NULL;"
+                );
+
+            yield return new TestCaseData(fizNamePath(), CheckType.NoCheck, BuildEnumeration<IColumn>(
+                CreateSqlServerColumn(intName, intType).Attributes
+                    .Add(new SeededIdentityColumnAttribute(1, 2), new NullableColumnAttribute())
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] WITH NOCHECK ADD [myInt] [INT] IDENTITY(1, 2) NOT NULL;"
                 );
         }
 
@@ -85,18 +124,21 @@ namespace Kingdom.Data
             const string bufferName = "myBuffer";
             const string floatName = "myFloat";
 
-            yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration(
-                CreateColumn(intName), CreateColumn(bufferName), CreateColumn(floatName)).ToValuesFixture()
+            yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration<IColumn>(
+                CreateSqlServerColumn(intName), CreateSqlServerColumn(bufferName)
+                , CreateSqlServerColumn(floatName)).ToValuesFixture()
                 , "ALTER TABLE [dbo].[foo] DROP COLUMN [myInt], [myBuffer], [myFloat];"
                 );
 
-            yield return new TestCaseData(barNamePath(), CheckType.Check, BuildEnumeration(
-                CreateColumn(intName), CreateColumn(bufferName), CreateColumn(floatName)).ToValuesFixture()
+            yield return new TestCaseData(barNamePath(), CheckType.Check, BuildEnumeration<IColumn>(
+                CreateSqlServerColumn(intName), CreateSqlServerColumn(bufferName)
+                , CreateSqlServerColumn(floatName)).ToValuesFixture()
                 , "ALTER TABLE [dbo].[bar] WITH CHECK DROP COLUMN [myInt], [myBuffer], [myFloat];"
                 );
 
-            yield return new TestCaseData(fizNamePath(), CheckType.NoCheck, BuildEnumeration(
-                CreateColumn(intName), CreateColumn(bufferName), CreateColumn(floatName)).ToValuesFixture()
+            yield return new TestCaseData(fizNamePath(), CheckType.NoCheck, BuildEnumeration<IColumn>(
+                CreateSqlServerColumn(intName), CreateSqlServerColumn(bufferName)
+                , CreateSqlServerColumn(floatName)).ToValuesFixture()
                 , "ALTER TABLE [dbo].[fiz] WITH NOCHECK DROP COLUMN [myInt], [myBuffer], [myFloat];"
                 );
         }
@@ -109,9 +151,12 @@ namespace Kingdom.Data
 
             const string barPrimaryKeyName = "PK_foo_bar";
             const string bazPrimaryKeyName = "PK_fiz_baz";
+            const string effDefaultName = "DF_foo_eff";
 
             const string intName = "myInt";
             const string floatName = "myFloat";
+
+            const int floatValue = 42;
 
             const SortOrder ascending = SortOrder.Ascending;
             const SortOrder descending = SortOrder.Descending;
@@ -120,24 +165,29 @@ namespace Kingdom.Data
             const ClusteredType clustered = ClusteredType.Clustered;
             const ClusteredType nonClustered = ClusteredType.NonClustered;
 
-            yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration(
-                CreateConstraint(barPrimaryKeyName, (SqlServerPrimaryKeyOrUniqueConstraint constraint) =>
-                {
-                    var column = CreateColumn(intName).Add(new SortOrderColumnAttribute {Value = ascending});
-                    constraint.KeyColumns.Add(column);
-                }).Add(new TableIndexConstraintAttribute {Value = primaryKey},
-                    new ClusteredConstraintAttribute {Value = clustered})).ToValuesFixture()
-                , "ALTER TABLE [dbo].[foo] ADD CONSTRAINT [PK_foo_bar] PRIMARY KEY CLUSTERED ([myInt] ASC);"
+            yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint(barPrimaryKeyName, (SqlServerPrimaryKeyOrUniqueConstraint c) =>
+                    c.Attributes.Add(new TableIndexConstraintAttribute(primaryKey),
+                        new ClusteredConstraintAttribute(clustered))
+                        .KeyColumns.Add(CreateSqlServerColumn(intName)
+                            .Attributes.Add(new SortOrderColumnAttribute(ascending))))
+                , CreateConstraint(effDefaultName, (SqlServerDefaultConstraint c) =>
+                    c.ConstantExpression(() => floatValue.ToString())
+                        .For(CreateSqlServerColumn(floatName))
+                        .Attributes.Add(new WithValuesConstraintAttribute()))
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[foo] ADD CONSTRAINT [PK_foo_bar] PRIMARY KEY CLUSTERED ([myInt] ASC)"
+                +", CONSTRAINT [DF_foo_eff] DEFAULT 42 FOR [myFloat] WITH VALUES;"
                 );
 
-            yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration(
-                CreateConstraint(bazPrimaryKeyName, (SqlServerPrimaryKeyOrUniqueConstraint constraint) =>
-                {
-                    var column = CreateColumn(floatName).Add(new SortOrderColumnAttribute {Value = descending});
-                    constraint.KeyColumns.Add(column);
-                }).Add(new TableIndexConstraintAttribute {Value = uniqueIndex},
-                    new ClusteredConstraintAttribute {Value = nonClustered})).ToValuesFixture()
-                , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [PK_fiz_baz] UNIQUE NONCLUSTERED ([myInt] DESC);"
+            yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint(bazPrimaryKeyName, (SqlServerPrimaryKeyOrUniqueConstraint c) =>
+                    c.KeyColumns.Add(CreateSqlServerColumn(floatName)
+                        .Attributes.Add(new SortOrderColumnAttribute(descending))))
+                    .Attributes.Add(new TableIndexConstraintAttribute(uniqueIndex),
+                        new ClusteredConstraintAttribute(nonClustered))
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [PK_fiz_baz] UNIQUE NONCLUSTERED ([myFloat] DESC);"
                 );
         }
 
@@ -149,20 +199,25 @@ namespace Kingdom.Data
 
             const string barPrimaryKeyName = "PK_foo_bar";
             const string bazPrimaryKeyName = "PK_fiz_baz";
+            const string carDefaultName = "DF_car_oxe";
 
-            const string intName = "myInt";
-            const string floatName = "myFloat";
-
-            yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration(
-                CreateConstraint(barPrimaryKeyName, (SqlServerPrimaryKeyOrUniqueConstraint c) =>
-                    c.KeyColumns.Add(CreateColumn(intName)))).ToValuesFixture()
+            yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint<SqlServerPrimaryKeyOrUniqueConstraint>(barPrimaryKeyName)
+                ).ToValuesFixture()
                 , "ALTER TABLE [dbo].[foo] DROP CONSTRAINT [PK_foo_bar];"
                 );
 
-            yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration(
-                CreateConstraint(bazPrimaryKeyName, (SqlServerPrimaryKeyOrUniqueConstraint constraint) =>
-                    constraint.KeyColumns.Add(CreateColumn(floatName)))).ToValuesFixture()
-                , "ALTER TABLE [dbo].[fiz] DROP CONSTRAINT [PK_fiz_baz];"
+            yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint<SqlServerDefaultConstraint>(carDefaultName)
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[foo] DROP CONSTRAINT [DF_car_oxe];"
+                );
+
+            yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint<SqlServerPrimaryKeyOrUniqueConstraint>(bazPrimaryKeyName)
+                , CreateConstraint<SqlServerDefaultConstraint>(carDefaultName)
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] DROP CONSTRAINT [PK_fiz_baz], [DF_car_oxe];"
                 );
         }
 
