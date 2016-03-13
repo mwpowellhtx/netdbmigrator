@@ -69,8 +69,9 @@ namespace Kingdom.Data
 
         /// <summary>
         /// Constant Expression backing field.
+        /// The default default value will be assumes to be Null when unspecified.
         /// </summary>
-        private Func<string> _constantExpr = delegate { throw new NotImplementedException(); };
+        private Func<string> _constantExpr = () => "NULL";
 
         public TParent ConstantExpression(Func<string> expr)
         {

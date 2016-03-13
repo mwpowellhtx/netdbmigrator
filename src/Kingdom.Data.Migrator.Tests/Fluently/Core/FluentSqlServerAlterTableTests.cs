@@ -181,6 +181,14 @@ namespace Kingdom.Data
                 );
 
             yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint(effDefaultName, (SqlServerDefaultConstraint c) =>
+                    c.For(CreateSqlServerColumn(floatName))
+                        .Attributes.Add(new WithValuesConstraintAttribute()))
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [DF_foo_eff] DEFAULT NULL FOR [myFloat] WITH VALUES;"
+                );
+
+            yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
                 CreateConstraint(bazPrimaryKeyName, (SqlServerPrimaryKeyOrUniqueConstraint c) =>
                     c.KeyColumns.Add(CreateSqlServerColumn(floatName)
                         .Attributes.Add(new SortOrderColumnAttribute(descending))))
