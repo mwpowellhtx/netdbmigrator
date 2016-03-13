@@ -98,7 +98,9 @@ namespace Kingdom.Data
             {
                 case CheckType.Check:
                 case CheckType.NoCheck:
-                    return string.Format(@" with {0}", _withCheck.Value).ToUpper();
+                    return _type == AlterTableType.Drop
+                        ? string.Empty
+                        : string.Format(@" with {0}", _withCheck.Value).ToUpper();
                 case null:
                     return string.Empty;
             }

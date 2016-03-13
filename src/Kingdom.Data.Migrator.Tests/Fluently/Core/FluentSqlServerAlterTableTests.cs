@@ -133,13 +133,13 @@ namespace Kingdom.Data
             yield return new TestCaseData(barNamePath(), CheckType.Check, BuildEnumeration<IColumn>(
                 CreateSqlServerColumn(intName), CreateSqlServerColumn(bufferName)
                 , CreateSqlServerColumn(floatName)).ToValuesFixture()
-                , "ALTER TABLE [dbo].[bar] WITH CHECK DROP COLUMN [myInt], [myBuffer], [myFloat];"
+                , "ALTER TABLE [dbo].[bar] DROP COLUMN [myInt], [myBuffer], [myFloat];"
                 );
 
             yield return new TestCaseData(fizNamePath(), CheckType.NoCheck, BuildEnumeration<IColumn>(
                 CreateSqlServerColumn(intName), CreateSqlServerColumn(bufferName)
                 , CreateSqlServerColumn(floatName)).ToValuesFixture()
-                , "ALTER TABLE [dbo].[fiz] WITH NOCHECK DROP COLUMN [myInt], [myBuffer], [myFloat];"
+                , "ALTER TABLE [dbo].[fiz] DROP COLUMN [myInt], [myBuffer], [myFloat];"
                 );
         }
 
