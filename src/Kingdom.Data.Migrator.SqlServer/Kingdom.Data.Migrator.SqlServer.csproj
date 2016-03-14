@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Fluently\SqlServerCheckConstraint.cs" />
     <Compile Include="Fluently\SqlServerDefaultConstraint.cs" />
     <Compile Include="Fluently\SqlServerFluentAlterTable.cs" />
     <Compile Include="Fluently\SqlServerColumn.cs" />

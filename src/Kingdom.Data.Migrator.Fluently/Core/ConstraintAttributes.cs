@@ -167,10 +167,32 @@
     /// >column_definition (Transact-SQL)</see>
     public class WithValuesConstraintAttribute : ConstraintAttributeBase
     {
-        /// <summary>
-        /// Default value.
-        /// </summary>
-        public static readonly WithValuesConstraintAttribute Instance
+        internal static readonly WithValuesConstraintAttribute Instance
             = new WithValuesConstraintAttribute();
+
+        /// <summary>
+        /// Internal default constructor.
+        /// </summary>
+        /// <remarks>This is internal for a reason, because it does not need to be exposed
+        /// to the outer edges.</remarks>
+        internal WithValuesConstraintAttribute()
+        {
+        }
+    }
+
+    /// <summary>
+    /// Not for replication constraint attribute.
+    /// </summary>
+    public interface INotForReplicationConstraintAttribute : IConstraintAttribute
+    {
+    }
+
+    /// <summary>
+    /// Not for replication constraint attribute.
+    /// </summary>
+    public class NotForReplicationConstraintAttribute : ConstraintAttributeBase
+    {
+        internal static readonly NotForReplicationConstraintAttribute Instance
+            = new NotForReplicationConstraintAttribute();
     }
 }

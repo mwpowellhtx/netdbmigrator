@@ -152,6 +152,7 @@ namespace Kingdom.Data
             const string barPrimaryKeyName = "PK_foo_bar";
             const string bazPrimaryKeyName = "PK_fiz_baz";
             const string effDefaultName = "DF_foo_eff";
+            const string fuzDefaultName = "CK_foo_fuz";
 
             const string intName = "myInt";
             const string floatName = "myFloat";
@@ -173,17 +174,15 @@ namespace Kingdom.Data
                             .Attributes.Add(new SortOrderColumnAttribute(ascending))))
                 , CreateConstraint(effDefaultName, (SqlServerDefaultConstraint c) =>
                     c.ConstantExpression(() => floatValue.ToString())
-                        .For(CreateSqlServerColumn(floatName))
-                        .Attributes.Add(new WithValuesConstraintAttribute()))
+                        .For(CreateSqlServerColumn(floatName))).WithValues
                 ).ToValuesFixture()
                 , "ALTER TABLE [dbo].[foo] ADD CONSTRAINT [PK_foo_bar] PRIMARY KEY CLUSTERED ([myInt] ASC)"
-                +", CONSTRAINT [DF_foo_eff] DEFAULT 42 FOR [myFloat] WITH VALUES;"
+                  + ", CONSTRAINT [DF_foo_eff] DEFAULT 42 FOR [myFloat] WITH VALUES;"
                 );
 
             yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
                 CreateConstraint(effDefaultName, (SqlServerDefaultConstraint c) =>
-                    c.For(CreateSqlServerColumn(floatName))
-                        .Attributes.Add(new WithValuesConstraintAttribute()))
+                    c.For(CreateSqlServerColumn(floatName))).WithValues
                 ).ToValuesFixture()
                 , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [DF_foo_eff] DEFAULT NULL FOR [myFloat] WITH VALUES;"
                 );
@@ -196,6 +195,20 @@ namespace Kingdom.Data
                         new ClusteredConstraintAttribute(nonClustered))
                 ).ToValuesFixture()
                 , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [PK_fiz_baz] UNIQUE NONCLUSTERED ([myFloat] DESC);"
+                );
+
+            yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint(fuzDefaultName, (SqlServerCheckConstraint c) =>
+                    c.NotForReplication.LogicalExpression(() => string.Format(@"[{0}]>0", floatName)))
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [CK_foo_fuz] CHECK NOT FOR REPLICATION ([myFloat]>0);"
+                );
+
+            yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint(fuzDefaultName, (SqlServerCheckConstraint c) =>
+                    c.LogicalExpression(() => string.Format(@"[{0}]>0", floatName)))
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [CK_foo_fuz] CHECK ([myFloat]>0);"
                 );
         }
 

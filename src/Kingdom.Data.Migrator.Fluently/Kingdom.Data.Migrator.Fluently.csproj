@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\AlterFluently.cs" />
+    <Compile Include="Core\CheckConstraintBase.cs" />
     <Compile Include="Core\ColumnAttributes.cs" />
     <Compile Include="Core\ConstraintAttributes.cs" />
     <Compile Include="Core\DataBase.cs" />

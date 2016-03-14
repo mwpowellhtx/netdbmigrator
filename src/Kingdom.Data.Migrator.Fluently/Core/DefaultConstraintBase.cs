@@ -5,9 +5,16 @@ namespace Kingdom.Data
     /// <summary>
     /// Default constraint interface.
     /// </summary>
+    public interface IDefaultConstraint : IConstraint
+    {
+    }
+
+    /// <summary>
+    /// Default constraint interface.
+    /// </summary>
     /// <typeparam name="TParent"></typeparam>
     public interface IDefaultConstraint<out TParent>
-        : IConstraint
+        : IDefaultConstraint
             , IHasDataAttributes<IConstraintAttribute, TParent>
         where TParent : IDefaultConstraint<TParent>
     {
@@ -17,9 +24,9 @@ namespace Kingdom.Data
         IDefaultColumn Column { get; }
 
         /// <summary>
-        /// Gets whether WithValues should be specified.
+        /// Signals that With Values attribute is specified.
         /// </summary>
-        bool WithValues { get; }
+        TParent WithValues { get; }
 
         /// <summary>
         /// Sets the <see cref="Column"/> for Default Constraint purposes.
@@ -51,7 +58,20 @@ namespace Kingdom.Data
         /// </summary>
         public IDefaultColumn Column { get; set; }
 
-        public bool WithValues
+        public TParent WithValues
+        {
+            get
+            {
+                Attributes.Add(WithValuesConstraintAttribute.Instance);
+                return GetThisParent();
+            }
+        }
+
+        /// <summary>
+        /// Gets whether With Values constraint attribute is specified.
+        /// </summary>
+        /// <returns></returns>
+        protected bool IsWithValuesSpecified
         {
             get
             {
@@ -64,7 +84,7 @@ namespace Kingdom.Data
         public TParent For(IDefaultColumn column)
         {
             Column = column;
-            return (TParent) this;
+            return GetThisParent();
         }
 
         /// <summary>
@@ -76,7 +96,7 @@ namespace Kingdom.Data
         public TParent ConstantExpression(Func<string> expr)
         {
             _constantExpr = expr;
-            return (TParent) this;
+            return GetThisParent();
         }
 
         private object _constantValue;
@@ -92,7 +112,7 @@ namespace Kingdom.Data
         {
             _constantValue = constantValue;
             _constantExpr = () => formatter((T) Convert.ChangeType(_constantValue, typeof (T)));
-            return (TParent) this;
+            return GetThisParent();
         }
 
         /// <summary>
@@ -105,12 +125,12 @@ namespace Kingdom.Data
         }
 
         /// <summary>
-        /// Returns the string representing the Witn Values attribute.
+        /// Returns the string representing the With Values attribute.
         /// </summary>
         /// <returns></returns>
         protected string GetWithValuesString()
         {
-            return WithValues ? @" WITH VALUES" : string.Empty;
+            return IsWithValuesSpecified ? @" WITH VALUES" : string.Empty;
         }
 
         public override string GetAddableString()

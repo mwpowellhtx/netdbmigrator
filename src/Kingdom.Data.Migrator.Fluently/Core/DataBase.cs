@@ -50,5 +50,14 @@ namespace Kingdom.Data
         {
             Attributes = null;
         }
+
+        /// <summary>
+        /// Returns this objects as <typeparamref name="TParent"/>.
+        /// </summary>
+        /// <returns></returns>
+        protected TParent GetThisParent()
+        {
+            return (TParent) this;
+        }
     }
 }
