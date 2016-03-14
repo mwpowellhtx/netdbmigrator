@@ -96,50 +96,6 @@
     }
 
     /// <summary>
-    /// Foreign key action constraint attribute.
-    /// </summary>
-    public interface IForeignKeyActionConstraintAttribute : IConstraintAttribute<ForeignKeyAction>
-    {
-
-        /// <summary>
-        /// Gets or sets the Trigger.
-        /// </summary>
-        ForeignKeyTrigger Trigger { get; set; }
-    }
-
-    /// <summary>
-    /// Foreign key action constraint attribute.
-    /// </summary>
-    public class ForeignKeyActionConstraintAttribute
-        : ConstraintAttributeBase<ForeignKeyAction>
-            , IForeignKeyActionConstraintAttribute
-    {
-        /// <summary>
-        /// Gets or sets the Trigger.
-        /// </summary>
-        public ForeignKeyTrigger Trigger { get; set; }
-
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        public ForeignKeyActionConstraintAttribute()
-        {
-        }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="action"></param>
-        /// <param name="trigger"></param>
-        public ForeignKeyActionConstraintAttribute(ForeignKeyAction action,
-            ForeignKeyTrigger trigger)
-            : base(action)
-        {
-            Trigger = trigger;
-        }
-    }
-
-    /// <summary>
     /// With Values constraint attribute.
     /// </summary>
     public interface IWithValuesConstraintAttribute : IConstraintAttribute
@@ -180,5 +136,50 @@
     {
         internal static readonly NotForReplicationConstraintAttribute Instance
             = new NotForReplicationConstraintAttribute();
+    }
+
+    /// <summary>
+    /// Foreign key action constraint attribute.
+    /// </summary>
+    public interface IForeignKeyActionConstraintAttribute : IConstraintAttribute<ForeignKeyTrigger>
+    {
+
+        /// <summary>
+        /// Gets or sets the Action.
+        /// </summary>
+        ForeignKeyAction Action { get; set; }
+    }
+
+    /// <summary>
+    /// Foreign key action constraint attribute.
+    /// </summary>
+    public class ForeignKeyActionConstraintAttribute
+        : ConstraintAttributeBase<ForeignKeyTrigger>
+            , IForeignKeyActionConstraintAttribute
+    {
+        /// <summary>
+        /// Gets or sets the Action.
+        /// </summary>
+        public ForeignKeyAction Action { get; set; }
+
+        /// <summary>
+        /// Internal default constructor.
+        /// </summary>
+        /// <remarks>This is internal for a reason, because it does not need to be exposed
+        /// to the outer edges.</remarks>
+        internal ForeignKeyActionConstraintAttribute()
+        {
+        }
+
+        /// <summary>
+        /// Internal constructor.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <remarks>This is internal for a reason, because it does not need to be exposed
+        /// to the outer edges.</remarks>
+        internal ForeignKeyActionConstraintAttribute(ForeignKeyAction action)
+        {
+            Action = action;
+        }
     }
 }

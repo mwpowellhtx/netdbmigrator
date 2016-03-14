@@ -62,7 +62,11 @@ namespace Kingdom.Data
         {
             get
             {
-                Attributes.Add(WithValuesConstraintAttribute.Instance);
+                if (!Attributes.TryColumnAttributeExists(
+                    (IConstraintAttribute c) => c is IWithValuesConstraintAttribute))
+                {
+                    Attributes.Add(WithValuesConstraintAttribute.Instance);
+                }
                 return GetThisParent();
             }
         }

@@ -153,6 +153,7 @@ namespace Kingdom.Data
             const string bazPrimaryKeyName = "PK_fiz_baz";
             const string effDefaultName = "DF_foo_eff";
             const string fuzDefaultName = "CK_foo_fuz";
+            const string fizFooForeignKeyName = "FK_fiz_foo";
 
             const string intName = "myInt";
             const string floatName = "myFloat";
@@ -165,7 +166,7 @@ namespace Kingdom.Data
             yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
                 CreateConstraint(barPrimaryKeyName, (SqlServerPrimaryKeyOrUniqueConstraint c) =>
                     c.PrimaryKey.Clustered.KeyColumns.Add(CreateSqlServerColumn(intName)
-                            .Attributes.Add(new SortOrderColumnAttribute(ascending))))
+                        .Attributes.Add(new SortOrderColumnAttribute(ascending))))
                 , CreateConstraint(effDefaultName, (SqlServerDefaultConstraint c) =>
                     c.ConstantExpression(() => floatValue.ToString())
                         .For(CreateSqlServerColumn(floatName))).WithValues
@@ -202,6 +203,36 @@ namespace Kingdom.Data
                 ).ToValuesFixture()
                 , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [CK_foo_fuz] CHECK ([myFloat]>0);"
                 );
+
+            yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint(fizFooForeignKeyName, (SqlServerForeignKeyConstraint c) =>
+                    c.Columns.Add(ForeignKeyColumns.MyInt, ForeignKeyColumns.MyFloat)
+                        .References.Table(fooNamePath())
+                        .Columns.Add(ReferenceColumns.MyInt, ReferenceColumns.MyFloat))
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [FK_fiz_foo]"
+                  + " FOREIGN KEY ([myInt], [myFloat]) REFERENCES [dbo].[foo] ([myInt], [myFloat]);"
+                );
+        }
+
+        /// <summary>
+        /// Columns useful during the process of building out a fluent Foreign Key statement.
+        /// </summary>
+        /// <see cref="IForeignKeyColumn"/>
+        private static class ForeignKeyColumns
+        {
+            internal static readonly IForeignKeyColumn MyInt = new SqlServerColumn("myInt");
+            internal static readonly IForeignKeyColumn MyFloat = new SqlServerColumn("myFloat");
+        }
+
+        /// <summary>
+        /// Columns useful during the process of building out a fluent Foreign Key statement.
+        /// </summary>
+        /// <see cref="IReferenceColumn"/>
+        private static class ReferenceColumns
+        {
+            internal static readonly IReferenceColumn MyInt = new SqlServerColumn("myInt");
+            internal static readonly IReferenceColumn MyFloat = new SqlServerColumn("myFloat");
         }
 
         private static IEnumerable<TestCaseData> GetAlterTableDropConstraintsTestCases()

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Kingdom.Data
 {
@@ -45,22 +46,9 @@ namespace Kingdom.Data
 
         private TParent InstallNotForReplication()
         {
-            Attributes.Add(NotForReplicationConstraintAttribute.Instance);
+            if (!Attributes.Items.OfType<NotForReplicationConstraintAttribute>().Any())
+                Attributes.Add(NotForReplicationConstraintAttribute.Instance);
             return GetThisParent();
-        }
-
-        /// <summary>
-        /// Gets whether Not For Replication constraint attribute is specified.
-        /// </summary>
-        /// <returns></returns>
-        protected bool IsNotForReplicationSpecified
-        {
-            get
-            {
-                bool result;
-                return Attributes.TryFindColumnAttribute(out result,
-                    (NotForReplicationConstraintAttribute x) => result = true) && result;
-            }
         }
 
         private Func<string> _expression;
@@ -79,6 +67,19 @@ namespace Kingdom.Data
         protected string GetLogicalExpressionString()
         {
             return _expression().Trim();
+        }
+
+        /// <summary>
+        /// Gets whether Not For Replication constraint attribute is specified.
+        /// </summary>
+        /// <returns></returns>
+        protected bool IsNotForReplicationSpecified
+        {
+            get
+            {
+                return Attributes.TryColumnAttributeExists(
+                    (IConstraintAttribute c) => c is INotForReplicationConstraintAttribute);
+            }
         }
 
         /// <summary>

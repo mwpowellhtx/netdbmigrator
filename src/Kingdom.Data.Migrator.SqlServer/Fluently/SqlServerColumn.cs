@@ -65,5 +65,11 @@ namespace Kingdom.Data
             var sortOrderString = GetSortOrderString();
             return string.Format("{0} {1}", Name, sortOrderString);
         }
+
+        // TODO: TBD: Is this one being called yet?
+        public override string GetForeignKeyReferenceString()
+        {
+            return Name.ToString();
+        }
     }
 }

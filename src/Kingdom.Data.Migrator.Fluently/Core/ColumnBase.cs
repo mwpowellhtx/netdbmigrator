@@ -17,10 +17,30 @@
     public interface IDefaultColumn : IColumn
     {
         /// <summary>
-        /// Gets the string representation of the column for Default Constraint purposes.
+        /// Returns the string representation of the column for Default Constraint purposes.
         /// </summary>
         /// <returns></returns>
         string GetDefaultString();
+    }
+
+    /// <summary>
+    /// Foreign key column interface.
+    /// </summary>
+    public interface IForeignKeyColumn : IColumn
+    {
+    }
+
+    /// <summary>
+    /// Reference column interface.
+    /// </summary>
+    public interface IReferenceColumn : IColumn
+    {
+        /// <summary>
+        /// Returns the string representation of the column for Foreign Key reference table
+        /// purposes.
+        /// </summary>
+        /// <returns></returns>
+        string GetForeignKeyReferenceString();
     }
 
     /// <summary>
@@ -56,7 +76,9 @@
     /// </summary>
     /// <typeparam name="TParent"></typeparam>
     public interface IColumn<out TParent>
-        : IDefaultColumn
+        : IForeignKeyColumn
+            , IReferenceColumn
+            , IDefaultColumn
             , IPrimaryKeyOrUniqueIndexColumn<TParent>
             , IHasDataAttributes<IColumnAttribute, TParent>
         where TParent : IColumn<TParent>
@@ -154,8 +176,8 @@
         {
             get
             {
-                return Attributes.TryColumnAttributeExists((IColumnAttribute x) =>
-                    x is IIdentityColumnAttribute || x is ISeededIdentityColumnAttribute);
+                return Attributes.TryColumnAttributeExists((IColumnAttribute c) =>
+                    c is IIdentityColumnAttribute || c is ISeededIdentityColumnAttribute);
             }
         }
 
@@ -279,6 +301,8 @@
         public abstract string GetPrimaryKeyOrUniqueString();
 
         public abstract string GetDefaultString();
+
+        public abstract string GetForeignKeyReferenceString();
     }
 
     /// <summary>

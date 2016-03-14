@@ -44,29 +44,6 @@ namespace Kingdom.Data
             , IPrimaryKeyOrUniqueConstraint<TParent>
         where TParent : PrimaryKeyOrUniqueConstraintBase<TParent>
     {
-        // TODO: this one is starting to look like a base class thing
-        /// <summary>
-        /// Provides a way to set attribute values in the constraint. <paramref name="factory"/>
-        /// is a concession parameter that permits a new attribute to be created without requiring
-        /// the new generic constraint, and thereby exposing the attribute outside the assembly.
-        /// But which also has the side benefit of shortening the code to a more concise version
-        /// when calling.
-        /// </summary>
-        /// <typeparam name="TConstraintAttribute"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
-        /// <param name="value"></param>
-        /// <param name="factory"></param>
-        /// <returns></returns>
-        private TParent Set<TConstraintAttribute, TValue>(TValue value, Func<TConstraintAttribute> factory)
-            where TConstraintAttribute : class, IConstraintAttribute<TValue>
-        {
-            TConstraintAttribute attribute;
-            if (!Attributes.TryFindColumnAttribute(out attribute, (TConstraintAttribute x) => x))
-                Attributes.Add(attribute = factory());
-            attribute.Value = value;
-            return GetThisParent();
-        }
-
         public TParent Clustered
         {
             get { return Set(ClusteredType.Clustered, () => new ClusteredConstraintAttribute()); }

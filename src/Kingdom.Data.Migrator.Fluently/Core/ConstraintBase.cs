@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Kingdom.Data
 {
@@ -25,6 +26,51 @@ namespace Kingdom.Data
         where TParent : ConstraintBase<TParent>
     {
         /// <summary>
+        /// Provides a way to set a valueless attribute in the constraint.
+        /// <paramref name="factory"/> is a concession parameter that permits a new attribute
+        /// to be created without requiring the new generic constraint, and thereby exposing
+        /// the attribute outside the assembly. But which also has the side benefit of shortening
+        /// the code to a more concise version when calling.
+        /// </summary>
+        /// <typeparam name="TConstraintAttribute"></typeparam>
+        /// <param name="factory"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        protected TParent Set<TConstraintAttribute>(Func<TConstraintAttribute> factory,
+            Func<TConstraintAttribute, bool> predicate = null)
+            where TConstraintAttribute : class, IConstraintAttribute
+        {
+            TConstraintAttribute attribute;
+            if (!Attributes.TryFindColumnAttribute(out attribute, x => x, predicate))
+                Attributes.Add(factory());
+            return GetThisParent();
+        }
+
+        /// <summary>
+        /// Provides a way to set attribute values in the constraint. <paramref name="factory"/>
+        /// is a concession parameter that permits a new attribute to be created without requiring
+        /// the new generic constraint, and thereby exposing the attribute outside the assembly.
+        /// But which also has the side benefit of shortening the code to a more concise version
+        /// when calling.
+        /// </summary>
+        /// <typeparam name="TConstraintAttribute"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="factory"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        protected TParent Set<TConstraintAttribute, TValue>(TValue value,
+            Func<TConstraintAttribute> factory, Func<TConstraintAttribute, bool> predicate = null)
+            where TConstraintAttribute : class, IConstraintAttribute<TValue>
+        {
+            TConstraintAttribute attribute;
+            if (!Attributes.TryFindColumnAttribute(out attribute, x => x, predicate))
+                Attributes.Add(attribute = factory());
+            attribute.Value = value;
+            return GetThisParent();
+        }
+
+        /// <summary>
         /// Gets the SubjectName: &quot;CONSTRAINT&quot;
         /// </summary>
         public string SubjectName
@@ -36,11 +82,6 @@ namespace Kingdom.Data
         /// Gets or sets the Constraint Name.
         /// </summary>
         public INamePath Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ColumnNames.
-        /// </summary>
-        public IList<INamePath> ColumnNames { get; set; }
 
         /// <summary>
         /// Returns the string representing the Fluent addable operation.
@@ -71,20 +112,5 @@ namespace Kingdom.Data
         /// Represents the key Columns.
         /// </summary>
         IFluentCollection<TColumn, TParent> KeyColumns { get; set; }
-    }
-
-    // TODO: fill in the column gaps next
-    public interface IForeignKeyConstraint<TParent>
-        : IConstraint
-            , IHasIndexColumns<IColumn, TParent>
-        where TParent : IForeignKeyConstraint<TParent>
-    {
-        INamePath ReferenceTableName { get; set; }
-
-        IList<INamePath> ReferenceColumns { get; set; }
-
-        ForeignKeyAction? OnDeleteAction { get; set; }
-
-        ForeignKeyAction? OnUpdateAction { get; set; }
     }
 }

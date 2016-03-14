@@ -119,14 +119,16 @@ namespace Kingdom.Data
         /// <param name="collection"></param>
         /// <param name="result"></param>
         /// <param name="getter"></param>
+        /// <param name="predicate"></param>
         /// <returns></returns>
         public static bool TryFindColumnAttribute<TItem, TItemBase, TResult>(
-            this IFluentCollectionItems<TItemBase> collection,
-            out TResult result, Func<TItem, TResult> getter)
+            this IFluentCollectionItems<TItemBase> collection, out TResult result,
+            Func<TItem, TResult> getter, Func<TItem, bool> predicate = null)
             where TItemBase : IDataAttribute
             where TItem : TItemBase
         {
-            var attribute = collection.Items.OfType<TItem>().SingleOrDefault();
+            predicate = predicate ?? (x => true);
+            var attribute = collection.Items.OfType<TItem>().SingleOrDefault(predicate);
             var found = attribute != null;
             result = found ? getter(attribute) : default(TResult);
             return found;
