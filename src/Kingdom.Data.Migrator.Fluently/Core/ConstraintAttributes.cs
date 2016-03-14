@@ -62,18 +62,11 @@
             , IClusteredConstraintAttribute
     {
         /// <summary>
-        /// Default constructor.
+        /// Internal default constructor.
         /// </summary>
-        public ClusteredConstraintAttribute()
-        {
-        }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="value"></param>
-        public ClusteredConstraintAttribute(ClusteredType value)
-            : base(value)
+        /// <remarks>The constructor is internal for a reason, because do not want to over
+        /// expose beyond the fluent interface more than is absolutely necessary.</remarks>
+        internal ClusteredConstraintAttribute()
         {
         }
     }
@@ -93,18 +86,11 @@
             , ITableIndexConstraintAttribute
     {
         /// <summary>
-        /// Default constructor.
+        /// Internal default constructor.
         /// </summary>
-        public TableIndexConstraintAttribute()
-        {
-        }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="value"></param>
-        public TableIndexConstraintAttribute(TableIndexType value)
-            : base(value)
+        /// <remarks>The constructor is internal for a reason, because do not want to over
+        /// expose beyond the fluent interface more than is absolutely necessary.</remarks>
+        internal TableIndexConstraintAttribute()
         {
         }
     }

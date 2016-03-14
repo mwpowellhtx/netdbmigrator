@@ -93,9 +93,7 @@ namespace Kingdom.Data
         public override string GetAddableString()
         {
             var exprString = GetLogicalExpressionString();
-
             var notForReplicationString = GetNotForReplicationString();
-
             return string.Format(@"{0} {1} CHECK{2} ({3})",
                 SubjectName, Name, notForReplicationString, exprString);
         }

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 namespace Kingdom.Data
@@ -12,15 +13,26 @@ namespace Kingdom.Data
         where TParent : IPrimaryKeyOrUniqueConstraint<TParent>
     {
         /// <summary>
-        /// Gets the Clustered type.
+        /// Signals that the constraint is <see cref="TableIndexType.PrimaryKey"/>.
         /// </summary>
-        /// <see cref="ClusteredType"/>
-        ClusteredType? Clustered { get; }
+        TParent PrimaryKey { get; }
 
         /// <summary>
-        /// Gets the IndexType.
+        /// Signals that the constraint is <see cref="TableIndexType.UniqueIndex"/>.
         /// </summary>
-        TableIndexType IndexType { get; }
+        TParent Unique { get; }
+
+        /// <summary>
+        /// Signals that the constraint is <see cref="ClusteredType.Clustered"/>.
+        /// </summary>
+        /// <see cref="ClusteredType"/>
+        TParent Clustered { get; }
+
+        /// <summary>
+        /// Signals that the constraint is <see cref="ClusteredType.NonClustered"/>.
+        /// </summary>
+        /// <see cref="ClusteredType"/>
+        TParent NonClustered { get; }
     }
 
     /// <summary>
@@ -32,37 +44,75 @@ namespace Kingdom.Data
             , IPrimaryKeyOrUniqueConstraint<TParent>
         where TParent : PrimaryKeyOrUniqueConstraintBase<TParent>
     {
-        public ClusteredType? Clustered
+        // TODO: this one is starting to look like a base class thing
+        /// <summary>
+        /// Provides a way to set attribute values in the constraint. <paramref name="factory"/>
+        /// is a concession parameter that permits a new attribute to be created without requiring
+        /// the new generic constraint, and thereby exposing the attribute outside the assembly.
+        /// But which also has the side benefit of shortening the code to a more concise version
+        /// when calling.
+        /// </summary>
+        /// <typeparam name="TConstraintAttribute"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="factory"></param>
+        /// <returns></returns>
+        private TParent Set<TConstraintAttribute, TValue>(TValue value, Func<TConstraintAttribute> factory)
+            where TConstraintAttribute : class, IConstraintAttribute<TValue>
         {
-            get
-            {
-                ClusteredType? result;
-                return Attributes.TryFindColumnAttribute(out result, (ClusteredConstraintAttribute x) => x.Value)
-                    ? result
-                    : null;
-            }
+            TConstraintAttribute attribute;
+            if (!Attributes.TryFindColumnAttribute(out attribute, (TConstraintAttribute x) => x))
+                Attributes.Add(attribute = factory());
+            attribute.Value = value;
+            return GetThisParent();
+        }
+
+        public TParent Clustered
+        {
+            get { return Set(ClusteredType.Clustered, () => new ClusteredConstraintAttribute()); }
+        }
+
+        public TParent NonClustered
+        {
+            get { return Set(ClusteredType.NonClustered, () => new ClusteredConstraintAttribute()); }
         }
 
         /// <summary>
-        /// Gets the IndexType.
+        /// Returns the <see cref="ClusteredType"/> from the constraint.
         /// </summary>
-        public TableIndexType IndexType
+        /// <returns></returns>
+        protected ClusteredType? GetClusteredAttributeValue()
         {
-            get
+            ClusteredType? result;
+            return Attributes.TryFindColumnAttribute(out result, (ClusteredConstraintAttribute x) => x.Value)
+                ? result
+                : null;
+        }
+
+        public TParent PrimaryKey
+        {
+            get { return Set(TableIndexType.PrimaryKey, () => new TableIndexConstraintAttribute()); }
+        }
+
+        public TParent Unique
+        {
+            get { return Set(TableIndexType.UniqueIndex, () => new TableIndexConstraintAttribute()); }
+        }
+
+        private TableIndexType GetTableIndexAttributeValue()
+        {
+            TableIndexType result;
+
+            if (!Attributes.TryFindColumnAttribute(out result, (TableIndexConstraintAttribute x) => x.Value))
             {
-                TableIndexType result;
-
-                if (!Attributes.TryFindColumnAttribute(out result, (TableIndexConstraintAttribute x) => x.Value))
+                throw this.ThrowNotSupportedException(() =>
                 {
-                    throw this.ThrowNotSupportedException(() =>
-                    {
-                        var delimited = CommaDelimited(this.GetValues<TableIndexType>().Select(x => x.ToString()));
-                        return string.Format(@"Table index type is required: {0}", delimited);
-                    });
-                }
-
-                return result;
+                    var delimited = CommaDelimited(this.GetValues<TableIndexType>().Select(x => x.ToString()));
+                    return string.Format(@"Table index type is required: {0}", delimited);
+                });
             }
+
+            return result;
         }
 
         private IFluentCollection<IPrimaryKeyOrUniqueIndexColumn, TParent> _keyColumns;
@@ -87,31 +137,35 @@ namespace Kingdom.Data
         }
 
         /// <summary>
-        /// Returns the string representation of the <see cref="Clustered"/> attribute.
+        /// Returns the string representation of the <see cref="Clustered"/>
+        /// or <see cref="NonClustered"/> signals.
         /// </summary>
         /// <returns></returns>
         protected virtual string GetClusteredString()
         {
+            var value = GetClusteredAttributeValue();
+
             // ReSharper disable once SwitchStatementMissingSomeCases
-            switch (Clustered)
+            switch (value)
             {
                 case ClusteredType.Clustered:
                 case ClusteredType.NonClustered:
-                    return string.Format(@" {0}", Clustered).ToUpper();
+                    return string.Format(@" {0}", value).ToUpper();
                 default:
                     return string.Empty;
             }
         }
 
         /// <summary>
-        /// Returns the string representation of the <see cref="IndexType"/>.
+        /// Returns the string representation of the <see cref="PrimaryKey"/>
+        /// or <see cref="Unique"/> signals.
         /// </summary>
         /// <returns></returns>
         /// <see cref="TableIndexType"/>
         protected string GetTableIndexString()
         {
             // ReSharper disable once SwitchStatementMissingSomeCases
-            switch (IndexType)
+            switch (GetTableIndexAttributeValue())
             {
                 case TableIndexType.PrimaryKey:
                     return "PRIMARY KEY";

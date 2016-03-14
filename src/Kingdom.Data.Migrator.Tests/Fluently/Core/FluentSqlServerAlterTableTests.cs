@@ -161,16 +161,10 @@ namespace Kingdom.Data
 
             const SortOrder ascending = SortOrder.Ascending;
             const SortOrder descending = SortOrder.Descending;
-            const TableIndexType primaryKey = TableIndexType.PrimaryKey;
-            const TableIndexType uniqueIndex = TableIndexType.UniqueIndex;
-            const ClusteredType clustered = ClusteredType.Clustered;
-            const ClusteredType nonClustered = ClusteredType.NonClustered;
 
             yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
                 CreateConstraint(barPrimaryKeyName, (SqlServerPrimaryKeyOrUniqueConstraint c) =>
-                    c.Attributes.Add(new TableIndexConstraintAttribute(primaryKey),
-                        new ClusteredConstraintAttribute(clustered))
-                        .KeyColumns.Add(CreateSqlServerColumn(intName)
+                    c.PrimaryKey.Clustered.KeyColumns.Add(CreateSqlServerColumn(intName)
                             .Attributes.Add(new SortOrderColumnAttribute(ascending))))
                 , CreateConstraint(effDefaultName, (SqlServerDefaultConstraint c) =>
                     c.ConstantExpression(() => floatValue.ToString())
@@ -190,9 +184,7 @@ namespace Kingdom.Data
             yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
                 CreateConstraint(bazPrimaryKeyName, (SqlServerPrimaryKeyOrUniqueConstraint c) =>
                     c.KeyColumns.Add(CreateSqlServerColumn(floatName)
-                        .Attributes.Add(new SortOrderColumnAttribute(descending))))
-                    .Attributes.Add(new TableIndexConstraintAttribute(uniqueIndex),
-                        new ClusteredConstraintAttribute(nonClustered))
+                        .Attributes.Add(new SortOrderColumnAttribute(descending)))).Unique.NonClustered
                 ).ToValuesFixture()
                 , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [PK_fiz_baz] UNIQUE NONCLUSTERED ([myFloat] DESC);"
                 );

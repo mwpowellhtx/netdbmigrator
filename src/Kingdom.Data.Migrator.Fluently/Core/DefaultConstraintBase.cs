@@ -136,11 +136,8 @@ namespace Kingdom.Data
         public override string GetAddableString()
         {
             var exprString = GetConstantExpressionString();
-
             var columnString = Column.GetDefaultString();
-
             var withValuesString = GetWithValuesString();
-
             return string.Format(@"{0} {1} DEFAULT {2} FOR {3}{4}",
                 SubjectName, Name, exprString, columnString, withValuesString);
         }
