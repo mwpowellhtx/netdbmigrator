@@ -12,15 +12,14 @@
     /// </summary>
     /// <typeparam name="TAlterTableFluently"></typeparam>
     public interface IAlterFluently<out TAlterTableFluently> : IFluently
-        where TAlterTableFluently : class, IAlterTableFluently, new()
+        where TAlterTableFluently : class, IAlterTableFluently<TAlterTableFluently>, new()
     {
         /// <summary>
         /// Initiates an Alter Table statement being built.
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="withCheck"></param>
         /// <returns></returns>
-        TAlterTableFluently Table(INamePath name, CheckType? withCheck = null);
+        TAlterTableFluently Table(INamePath name);
     }
 
     /// <summary>
@@ -62,9 +61,11 @@
     /// <summary>
     /// Represents fluently being able to Alter Table.
     /// </summary>
-    public interface IAlterTableFluently
+    /// <typeparam name="TParent"></typeparam>
+    public interface IAlterTableFluently<out TParent>
         : IAlterTableAddFluently
             , IAlterTableDropFluently
+        where TParent : IAlterTableFluently<TParent>
     {
         /// <summary>
         /// Gets or sets the TableName.
@@ -72,9 +73,11 @@
         INamePath TableName { get; set; }
 
         /// <summary>
-        /// Gets or sets WithCheck.
+        /// Sets the <paramref name="checkType"/> for the fluent Alter Table sentence.
         /// </summary>
-        CheckType? WithCheck { get; set; }
+        /// <param name="checkType"></param>
+        /// <returns></returns>
+        TParent With(CheckType checkType);
     }
 
     //TODO: TBD: may need to consider an alter table fluent "agent" of sorts; sort of an ALTER TABLE <AGENT/>

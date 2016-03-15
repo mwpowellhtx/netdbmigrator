@@ -3,7 +3,8 @@
     /// <summary>
     /// Provides fluent Alter Table helpers for Sql Server.
     /// </summary>
-    public class SqlServerFluentAlterTable : FluentAlterTableBase
+    public class SqlServerFluentAlterTable
+        : FluentAlterTableBase<SqlServerFluentAlterTable>
     {
         /// <summary>
         /// Builds the Sql string for Sql Server Alter Table.

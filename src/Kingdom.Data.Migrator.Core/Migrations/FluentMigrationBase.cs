@@ -5,7 +5,7 @@ namespace Kingdom.Data.Migrations
     /// </summary>
     /// <typeparam name="TAlterTableFluently"></typeparam>
     public abstract class FluentMigrationBase<TAlterTableFluently> : MigrationBase
-        where TAlterTableFluently : class, IAlterTableFluently, new()
+        where TAlterTableFluently : class, IAlterTableFluently<TAlterTableFluently>, new()
     {
         /// <summary>
         /// Alter backing field.

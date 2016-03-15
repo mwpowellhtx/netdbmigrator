@@ -132,7 +132,9 @@
     /// <summary>
     /// Not for replication constraint attribute.
     /// </summary>
-    public class NotForReplicationConstraintAttribute : ConstraintAttributeBase
+    public class NotForReplicationConstraintAttribute
+        : ConstraintAttributeBase
+            , INotForReplicationConstraintAttribute
     {
         internal static readonly NotForReplicationConstraintAttribute Instance
             = new NotForReplicationConstraintAttribute();

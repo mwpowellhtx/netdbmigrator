@@ -10,31 +10,38 @@ namespace Kingdom.Data
     public class FluentAlterRoot<TAlterTableFluently>
         : FluentRootBase
             , IAlterFluently<TAlterTableFluently>
-        where TAlterTableFluently : class, IAlterTableFluently, new()
+        where TAlterTableFluently : class, IAlterTableFluently<TAlterTableFluently>, new()
     {
         /// <summary>
         /// Returns a <see cref="TAlterTableFluently"/> instance given
-        /// <paramref name="name"/> and <paramref name="withCheck"/>.
+        /// <paramref name="name"/>.
         /// </summary>
         /// <param name="name"></param>
-        /// <param name="withCheck"></param>
         /// <returns></returns>
-        public TAlterTableFluently Table(INamePath name, CheckType? withCheck = null)
+        public TAlterTableFluently Table(INamePath name)
         {
-            return new TAlterTableFluently {TableName = name, WithCheck = withCheck};
+            return new TAlterTableFluently {TableName = name};
         }
     }
 
     /// <summary>
     /// Represents fluent Alter Table base class everything Alter Table stems from this class.
     /// </summary>
-    public abstract class FluentAlterTableBase
+    public abstract class FluentAlterTableBase<TParent>
         : FluentRootBase
-            , IAlterTableFluently
+            , IAlterTableFluently<TParent>
+        where TParent : FluentAlterTableBase<TParent>
     {
-        private AlterTableType? _type;
+        /// <summary>
+        /// Returns with this <typeparamref name="TParent"/>.
+        /// </summary>
+        /// <returns></returns>
+        protected TParent GetThisParent()
+        {
+            return (TParent) this;
+        }
 
-        private CheckType? _withCheck;
+        private AlterTableType? _type;
 
         /// <summary>
         /// Gets or sets the TableName.
@@ -59,11 +66,12 @@ namespace Kingdom.Data
             set { _type = _type ?? value; }
         }
 
-        //TODO: with check should be an attribute? would certainly fit the pattern...
-        public CheckType? WithCheck
+        private CheckType? _checkType;
+
+        public TParent With(CheckType checkType)
         {
-            get { return _withCheck; }
-            set { _withCheck = value; }
+            _checkType = checkType;
+            return GetThisParent();
         }
 
         /// <summary>
@@ -94,20 +102,20 @@ namespace Kingdom.Data
         protected string GetWithCheckTypeString()
         {
             // ReSharper disable once SwitchStatementMissingSomeCases
-            switch (_withCheck)
+            switch (_checkType)
             {
                 case CheckType.Check:
                 case CheckType.NoCheck:
                     return _type == AlterTableType.Drop
                         ? string.Empty
-                        : string.Format(@" with {0}", _withCheck.Value).ToUpper();
+                        : string.Format(@" with {0}", _checkType.Value).ToUpper();
                 case null:
                     return string.Empty;
             }
 
             throw this.ThrowNotSupportedException(() => string.Format(
                 "Alter table with check not supported: {0}",
-                _withCheck == null ? "null" : _withCheck.Value.ToString()));
+                _checkType == null ? "null" : _checkType.Value.ToString()));
         }
 
         /// <summary>

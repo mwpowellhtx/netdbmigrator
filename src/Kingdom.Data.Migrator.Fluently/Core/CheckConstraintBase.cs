@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace Kingdom.Data
 {
@@ -46,7 +45,7 @@ namespace Kingdom.Data
 
         private TParent InstallNotForReplication()
         {
-            if (!Attributes.Items.OfType<NotForReplicationConstraintAttribute>().Any())
+            if (!Attributes.TryColumnAttributeExists((INotForReplicationConstraintAttribute c) => true))
                 Attributes.Add(NotForReplicationConstraintAttribute.Instance);
             return GetThisParent();
         }

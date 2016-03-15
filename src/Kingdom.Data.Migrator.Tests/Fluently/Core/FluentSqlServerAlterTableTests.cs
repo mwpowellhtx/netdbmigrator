@@ -7,7 +7,8 @@ namespace Kingdom.Data
 {
     using NUnit.Framework;
 
-    public class FluentSqlServerAlterTableTests : FluentlyAlterTestFixtureBase<SqlServerFluentAlterTable>
+    public class FluentSqlServerAlterTableTests
+        : FluentlyAlterTestFixtureBase<SqlServerFluentAlterTable>
     {
         private static TParent CreateColumn<TParent>(string columnName)
             where TParent : class, IColumn<TParent>, new()
@@ -315,11 +316,13 @@ namespace Kingdom.Data
 
         [Test]
         [TestCaseSource(TestCases.AlterTableAddColumnsTestCases)]
-        public void CanAlterTableAddColumns(INamePath tableName, CheckType? withCheck,
+        public void CanAlterTableAddColumns(INamePath tableName, CheckType? checkType,
             IValuesFixture<IColumn> columns, string expectedSql)
         {
             // The real gains are realized here when we finally fluently build the alter statement.
-            var actualSql = Alter.Table(tableName, withCheck).Add(columns.Values.ToArray()).ToString();
+            var fluently = With(Alter.Table(tableName), checkType);
+
+            var actualSql = fluently.Add(columns.Values.ToArray()).ToString();
 
             Console.WriteLine("CanAlterTableAddColumns SQL: {0}", actualSql);
 
@@ -328,11 +331,13 @@ namespace Kingdom.Data
 
         [Test]
         [TestCaseSource(TestCases.AlterTableDropColumnsTestCases)]
-        public void CanAlterTableDropColumns(INamePath tableName, CheckType? withCheck,
+        public void CanAlterTableDropColumns(INamePath tableName, CheckType? checkType,
             IValuesFixture<IColumn> columns, string expectedSql)
         {
             // The real gains are realized here when we finally fluently build the alter statement.
-            var actualSql = Alter.Table(tableName, withCheck).Drop(columns.Values.ToArray()).ToString();
+            var fluently = With(Alter.Table(tableName), checkType);
+
+            var actualSql = fluently.Drop(columns.Values.ToArray()).ToString();
 
             Console.WriteLine("CanAlterTableDropColumns SQL: {0}", actualSql);
 
@@ -341,10 +346,12 @@ namespace Kingdom.Data
 
         [Test]
         [TestCaseSource(TestCases.AlterTableAddConstraintsTestCases)]
-        public void CanAlterTableAddConstraints(INamePath tableName, CheckType? withCheck,
+        public void CanAlterTableAddConstraints(INamePath tableName, CheckType? checkType,
             IValuesFixture<IConstraint> constraints, string expectedSql)
         {
-            var actualSql = Alter.Table(tableName, withCheck).Add(constraints.Values.ToArray()).ToString();
+            var fluently = With(Alter.Table(tableName), checkType);
+
+            var actualSql = fluently.Add(constraints.Values.ToArray()).ToString();
 
             Console.Write("CanAlterTableAddConstraints SQL: {0}", actualSql);
 
@@ -353,10 +360,12 @@ namespace Kingdom.Data
 
         [Test]
         [TestCaseSource(TestCases.AlterTableDropConstraintsTestCases)]
-        public void CanAlterTableDropConstraints(INamePath tableName, CheckType? withCheck,
+        public void CanAlterTableDropConstraints(INamePath tableName, CheckType? checkType,
             IValuesFixture<IConstraint> constraints, string expectedSql)
         {
-            var actualSql = Alter.Table(tableName, withCheck).Drop(constraints.Values.ToArray()).ToString();
+            var fluently = With(Alter.Table(tableName), checkType);
+
+            var actualSql = fluently.Drop(constraints.Values.ToArray()).ToString();
 
             Console.Write("CanAlterTableDropConstraints SQL: {0}", actualSql);
 
