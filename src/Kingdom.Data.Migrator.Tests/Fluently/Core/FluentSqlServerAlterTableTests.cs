@@ -214,6 +214,18 @@ namespace Kingdom.Data
                 , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [FK_fiz_foo]"
                   + " FOREIGN KEY ([myInt], [myFloat]) REFERENCES [dbo].[foo] ([myInt], [myFloat]);"
                 );
+
+            yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint(fizFooForeignKeyName, (SqlServerForeignKeyConstraint c) =>
+                    c.Columns.Add(ForeignKeyColumns.MyInt, ForeignKeyColumns.MyFloat)
+                        .References.Table(fooNamePath())
+                        .Columns.Add(ReferenceColumns.MyInt, ReferenceColumns.MyFloat)
+                        .OnDelete(ForeignKeyAction.SetDefault).OnUpdate(ForeignKeyAction.Cascade))
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] ADD CONSTRAINT [FK_fiz_foo]"
+                  + " FOREIGN KEY ([myInt], [myFloat]) REFERENCES [dbo].[foo] ([myInt], [myFloat])"
+                  + " ON DELETE SET DEFAULT ON UPDATE CASCADE;"
+                );
         }
 
         /// <summary>

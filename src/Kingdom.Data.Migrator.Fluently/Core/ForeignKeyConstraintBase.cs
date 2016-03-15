@@ -213,6 +213,10 @@ namespace Kingdom.Data
 
                 case ForeignKeyAction.SetDefault:
                     return formatter("set default");
+
+                case null:
+                    // Remember the null case is valid meaning no triggered action was specified.
+                    return string.Empty;
             }
 
             throw this.ThrowNotSupportedException(
@@ -268,8 +272,8 @@ namespace Kingdom.Data
             var referenceTableName = GetReferenceTableNameString();
             var referenceColumnStrings = CommaDelimited(GetReferenceColumnStrings());
 
-            var onDeleteString = GetTriggeredActionValue(ForeignKeyTrigger.Delete);
-            var onUpdateString = GetTriggeredActionValue(ForeignKeyTrigger.Update);
+            var onDeleteString = GetTriggeredActionString(ForeignKeyTrigger.Delete);
+            var onUpdateString = GetTriggeredActionString(ForeignKeyTrigger.Update);
 
             var notForReplicationString = GetNotForReplicationString();
 
