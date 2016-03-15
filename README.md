@@ -26,6 +26,18 @@ Some assumptions made going into the package:
 
 * When running migrations, the migrator will ensure that the database exists prior to running the first migration. It will leave existing databases alone.
 
+## Project Assumptions &amp; Goals
+
+I should pause to consider a couple of project design goals, assumptions, etc.
+
+* I set out provide a simple framework that facilitates well-controlled, versioned migrations. The framework does not protect you from mismanaging your migrations, versions, etc, but it does facilitate an orderly process for downgrading and upgrading your databases. However, overall, the framework is functioning as intended. I can identify migrations, they are reconciled with what has been applied, and can downgrade and upgrade database versions accordingly.
+
+* Sql Server is the first provider I for which I included support. Eventually, I may extend that into common providers such as [MySQL](http://dev.mysql.com/). To my knowledge, this extensibility should work fairly seamlessly.
+
+* I made a conscious decision not to support Fluent migrations. After performing a couple of migrations in which I had a lot of boilerplate, cookie-cutter code, I decided that a fluent migration sentence would make better sense. The past several commits at the time I am writing this reflect this ongoing effort.
+
+* My Fluent goals are not to provide all or nothing feature completeness, much less feature parity. Rather, I will support incrementally folding in aspects, phrases, clauses, etc, even whole statements, as makes sense to do so. Contributions are definitely welcome. Along these lines, support for ``ALTER TABLE`` is provided as reflected in recent commits.
+
 ## Dependencies
 
 * [EntityFramework](http://msdn.microsoft.com/en-us/data/ef.aspx)
