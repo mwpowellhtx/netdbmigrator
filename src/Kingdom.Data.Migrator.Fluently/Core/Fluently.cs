@@ -77,7 +77,7 @@
         /// </summary>
         /// <param name="checkType"></param>
         /// <returns></returns>
-        TParent With(CheckType checkType);
+        TParent With(CheckType? checkType = null);
     }
 
     //TODO: TBD: may need to consider an alter table fluent "agent" of sorts; sort of an ALTER TABLE <AGENT/>

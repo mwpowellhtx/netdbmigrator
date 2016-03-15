@@ -20,7 +20,13 @@ namespace Kingdom.Data
         /// <returns></returns>
         protected static TAlterTableFluently With(TAlterTableFluently fluently, CheckType? checkType)
         {
-            return checkType == null ? fluently : fluently.With(checkType.Value);
+            // Setting, then "unsetting" the With Check|NoCheck here is deliberate to test the outcome.
+            if (checkType == null)
+                fluently = fluently.With(CheckType.Check);
+
+            return checkType == null
+                ? fluently.With()
+                : fluently.With(checkType.Value);
         }
     }
 }

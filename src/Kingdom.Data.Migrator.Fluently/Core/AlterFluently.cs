@@ -68,7 +68,7 @@ namespace Kingdom.Data
 
         private CheckType? _checkType;
 
-        public TParent With(CheckType checkType)
+        public TParent With(CheckType? checkType = null)
         {
             _checkType = checkType;
             return GetThisParent();
@@ -95,7 +95,7 @@ namespace Kingdom.Data
         }
 
         /// <summary>
-        /// Returns the string corresponding to the <see cref="_withCheck"/> value.
+        /// Returns the string corresponding to the <see cref="_checkType"/> value.
         /// </summary>
         /// <returns></returns>
         /// <see cref="CheckType"/>
