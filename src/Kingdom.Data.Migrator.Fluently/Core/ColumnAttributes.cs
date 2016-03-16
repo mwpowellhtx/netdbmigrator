@@ -45,6 +45,13 @@
     }
 
     /// <summary>
+    /// If Exists column attribute.
+    /// </summary>
+    public interface IIfExistsColumnAttribute : IColumnAttribute
+    {
+    }
+
+    /// <summary>
     /// Represents a basic valueless Column attribute.
     /// </summary>
     public class ColumnAttributeBase : DataAttributeBase, IColumnAttribute
@@ -212,5 +219,22 @@
             : base(value)
         {
         }
+    }
+
+    /// <summary>
+    /// If Exists column attribute.
+    /// </summary>
+    public class IfExistsColumnAttribute : ColumnAttributeBase, IIfExistsColumnAttribute
+    {
+        /// <summary>
+        /// Private constructor.
+        /// </summary>
+        /// <remarks>This is private for a reason, because it does not need to be exposed
+        /// to the outer edges.</remarks>
+        private IfExistsColumnAttribute()
+        {
+        }
+
+        internal static IIfExistsColumnAttribute DefaultInstance = new IfExistsColumnAttribute();
     }
 }

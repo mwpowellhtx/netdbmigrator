@@ -81,6 +81,7 @@
             , IDefaultColumn
             , IPrimaryKeyOrUniqueIndexColumn<TParent>
             , IHasDataAttributes<IColumnAttribute, TParent>
+            , IAlterIfExists<TParent>
         where TParent : IColumn<TParent>
     {
         /// <summary>
@@ -207,6 +208,21 @@
                     ? result
                     : null;
             }
+        }
+
+        public TParent IfExists()
+        {
+            if (!Attributes.TryColumnAttributeExists((IIfExistsColumnAttribute c) => true))
+                Attributes.Add(IfExistsColumnAttribute.DefaultInstance);
+            return GetThisParent();
+        }
+
+        /// <summary>
+        /// Gets whether Has If Exists clause.
+        /// </summary>
+        public bool HasIfExists
+        {
+            get { return Attributes.TryColumnAttributeExists((IIfExistsColumnAttribute c) => true); }
         }
 
         /// <summary>

@@ -53,6 +53,8 @@
     <Compile Include="Core\ForeignKeyConstraintBase.cs" />
     <Compile Include="Core\HasDataAttributes.cs" />
     <Compile Include="Core\HasReferenceColumns.cs" />
+    <Compile Include="Core\HavingIfExists.cs" />
+    <Compile Include="Core\IAlterIfExists.cs" />
     <Compile Include="Core\PrimaryKeyOrUniqueConstraintBase.cs" />
     <Compile Include="Core\Subjects.cs" />
     <Compile Include="Extensions\EnumerationExtensionMethods.cs" />

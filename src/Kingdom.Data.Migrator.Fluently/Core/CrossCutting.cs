@@ -15,7 +15,7 @@
     /// <summary>
     /// Table Droppable interface.
     /// </summary>
-    public interface ITableDroppable : ISubject
+    public interface ITableDroppable : ISubject, IHavingIfExists
     {
         /// <summary>
         /// Returns the Droppable string.

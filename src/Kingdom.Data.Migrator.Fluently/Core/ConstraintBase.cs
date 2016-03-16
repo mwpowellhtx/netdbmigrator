@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Kingdom.Data
 {
@@ -23,6 +22,7 @@ namespace Kingdom.Data
     public abstract class ConstraintBase<TParent>
         : DataBase<IConstraintAttribute, TParent>
             , IConstraint
+            , IAlterIfExists<TParent>
         where TParent : ConstraintBase<TParent>
     {
         /// <summary>
@@ -82,6 +82,21 @@ namespace Kingdom.Data
         /// Gets or sets the Constraint Name.
         /// </summary>
         public INamePath Name { get; set; }
+
+        public TParent IfExists()
+        {
+            if (!Attributes.TryColumnAttributeExists((IIfExistsConstraintAttribute c) => true))
+                Attributes.Add(IfExistsConstraintAttribute.DefaultInstance);
+            return GetThisParent();
+        }
+
+        /// <summary>
+        /// Gets whether HasIfExists.
+        /// </summary>
+        public bool HasIfExists
+        {
+            get { return Attributes.TryColumnAttributeExists((IfExistsConstraintAttribute c) => true); }
+        }
 
         /// <summary>
         /// Returns the string representing the Fluent addable operation.

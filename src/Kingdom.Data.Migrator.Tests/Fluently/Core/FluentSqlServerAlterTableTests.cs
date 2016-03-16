@@ -142,6 +142,20 @@ namespace Kingdom.Data
                 , CreateSqlServerColumn(floatName)).ToValuesFixture()
                 , "ALTER TABLE [dbo].[fiz] DROP COLUMN [myInt], [myBuffer], [myFloat];"
                 );
+
+            // All or nothing: if some of them have IfExists(), then will no specify.
+            yield return new TestCaseData(fizNamePath(), CheckType.NoCheck, BuildEnumeration<IColumn>(
+                CreateSqlServerColumn(intName).IfExists(), CreateSqlServerColumn(bufferName)
+                , CreateSqlServerColumn(floatName)).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] DROP COLUMN [myInt], [myBuffer], [myFloat];"
+                );
+
+            // All or nothing specify IfExists().
+            yield return new TestCaseData(fizNamePath(), CheckType.NoCheck, BuildEnumeration<IColumn>(
+                CreateSqlServerColumn(intName).IfExists(), CreateSqlServerColumn(bufferName).IfExists()
+                , CreateSqlServerColumn(floatName).IfExists()).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] DROP COLUMN IF EXISTS [myInt], [myBuffer], [myFloat];"
+                );
         }
 
         private static IEnumerable<TestCaseData> GetAlterTableAddConstraintsTestCases()
@@ -256,7 +270,8 @@ namespace Kingdom.Data
 
             const string barPrimaryKeyName = "PK_foo_bar";
             const string bazPrimaryKeyName = "PK_fiz_baz";
-            const string carDefaultName = "DF_car_oxe";
+            const string oxeDefaultName = "DF_car_oxe";
+            const string picDefaultName = "DF_car_pic";
 
             yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
                 CreateConstraint<SqlServerPrimaryKeyOrUniqueConstraint>(barPrimaryKeyName)
@@ -265,16 +280,33 @@ namespace Kingdom.Data
                 );
 
             yield return new TestCaseData(fooNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
-                CreateConstraint<SqlServerDefaultConstraint>(carDefaultName)
+                CreateConstraint<SqlServerDefaultConstraint>(oxeDefaultName)
                 ).ToValuesFixture()
                 , "ALTER TABLE [dbo].[foo] DROP CONSTRAINT [DF_car_oxe];"
                 );
 
             yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
                 CreateConstraint<SqlServerPrimaryKeyOrUniqueConstraint>(bazPrimaryKeyName)
-                , CreateConstraint<SqlServerDefaultConstraint>(carDefaultName)
+                , CreateConstraint<SqlServerDefaultConstraint>(oxeDefaultName)
                 ).ToValuesFixture()
                 , "ALTER TABLE [dbo].[fiz] DROP CONSTRAINT [PK_fiz_baz], [DF_car_oxe];"
+                );
+
+            // All or nothing if only some are specified IfExists() then will not render.
+            yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint<SqlServerPrimaryKeyOrUniqueConstraint>(bazPrimaryKeyName).IfExists()
+                , CreateConstraint<SqlServerDefaultConstraint>(oxeDefaultName)
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] DROP CONSTRAINT [PK_fiz_baz], [DF_car_oxe];"
+                );
+
+            // All or nothing if all have IfExists() then will render.
+            yield return new TestCaseData(fizNamePath(), (CheckType?) null, BuildEnumeration<IConstraint>(
+                CreateConstraint<SqlServerPrimaryKeyOrUniqueConstraint>(bazPrimaryKeyName).IfExists()
+                , CreateConstraint<SqlServerDefaultConstraint>(oxeDefaultName).IfExists()
+                , CreateConstraint<SqlServerDefaultConstraint>(picDefaultName).IfExists()
+                ).ToValuesFixture()
+                , "ALTER TABLE [dbo].[fiz] DROP CONSTRAINT IF EXISTS [PK_fiz_baz], [DF_car_oxe], [DF_car_pic];"
                 );
         }
 

@@ -184,4 +184,28 @@
             Action = action;
         }
     }
+
+    /// <summary>
+    /// If Exists constraint attribute.
+    /// </summary>
+    public interface IIfExistsConstraintAttribute : IConstraintAttribute
+    {
+    }
+
+    /// <summary>
+    /// If Exists constraint attribute.
+    /// </summary>
+    public class IfExistsConstraintAttribute : ConstraintAttributeBase, IIfExistsConstraintAttribute
+    {
+        /// <summary>
+        /// Private constructor.
+        /// </summary>
+        /// <remarks>This is private for a reason, because it does not need to be exposed
+        /// to the outer edges.</remarks>
+        private IfExistsConstraintAttribute()
+        {
+        }
+
+        internal static readonly IIfExistsConstraintAttribute DefaultInstance = new IfExistsConstraintAttribute();
+    }
 }

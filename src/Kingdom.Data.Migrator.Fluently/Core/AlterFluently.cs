@@ -190,6 +190,27 @@ namespace Kingdom.Data
         }
 
         /// <summary>
+        /// Returns the string representation of the If Exists clause.
+        /// </summary>
+        /// <returns></returns>
+        protected string GetIfExistsString()
+        {
+            // ReSharper disable once SwitchStatementMissingSomeCases
+            switch (_type)
+            {
+                case AlterTableType.Add:
+                    return string.Empty;
+                case AlterTableType.Drop:
+                    var allHaveIfExists = _droppables.OfType<IHavingIfExists>().All(x => x.HasIfExists);
+                    return (allHaveIfExists ? @" if exists" : string.Empty).ToUpper();
+            }
+
+            throw ((object) null).ThrowNotSupportedException(() => string.Format(
+                "Alter type not supported: {0}",
+                _type == null ? "null" : _type.Value.ToString()));
+        }
+
+        /// <summary>
         /// Returns a collection of formatted Subject strings.
         /// </summary>
         /// <returns></returns>
